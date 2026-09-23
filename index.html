@@ -1,0 +1,1169 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PO-Express — MSB Open SCF Platform (prototype)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* MSB Open SCF · PO-Express — giao diện hi-fi (web desktop 1440) */
+:root {
+  --primary: #F26A21; --primary-600: #DD5716; --brand: #EF4029;
+  --primary-50: #FEF3EC; --primary-100: #FDE3D2; --primary-border: #F6C4A6;
+  --bg: #F5F6F8; --card: #FFFFFF; --line: #E6E8EC; --line2: #EFF1F4;
+  --text: #1D2129; --text2: #5B6472; --text3: #8E96A3;
+  --green: #12994A; --green-50: #E7F6EE; --red: #D63036; --red-50: #FDEDED;
+  --amber: #B96A00; --amber-50: #FFF4DF; --blue: #2E7CF6; --blue-50: #EAF2FF;
+  --dms: #0F766E; --dms-600: #0B5E58; --dms-50: #E5F3F1; --dms-head: #13233A;
+  --shadow: 0 12px 32px rgba(16, 24, 40, .12), 0 2px 6px rgba(16, 24, 40, .06);
+  --font: 'Be Vietnam Pro', 'Inter', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { font-family: var(--font); color: var(--text); background: #DADDE3; font-size: 14px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+body.export { background: var(--bg); }
+button { font-family: inherit; }
+.ic { width: 18px; height: 18px; flex: none; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--text2); }
+.faint { color: var(--text3); }
+.grow { flex: 1; }
+.row { display: flex; align-items: center; gap: 8px; }
+.between { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.grid { display: grid; gap: 16px; align-items: start; }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.mt8 { margin-top: 8px; } .mt12 { margin-top: 12px; } .mt16 { margin-top: 16px; } .mt20 { margin-top: 20px; } .mt24 { margin-top: 24px; }
+.small { font-size: 12.5px; } .xs { font-size: 12px; }
+b, strong { font-weight: 700; }
+
+/* ---------- stage ---------- */
+#stage { width: 1440px; margin: 0 auto; background: var(--bg); }
+.screen { display: none; position: relative; width: 1440px; min-height: var(--h); background: var(--bg); overflow: hidden; }
+.screen.active { display: block; }
+
+/* ---------- MSB shell ---------- */
+.msb { display: grid; grid-template-columns: 248px 1fr; min-height: var(--h); }
+.msb-side { background: #fff; border-right: 1px solid var(--line); padding: 14px 12px 24px; }
+.msb-logo { display: flex; align-items: center; gap: 10px; padding: 4px 6px 14px; }
+.logo-mark { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #EF4029 0%, #F7851E 100%); color: #fff; font-weight: 800; font-size: 12px; letter-spacing: .3px; display: grid; place-items: center; box-shadow: 0 2px 6px rgba(239, 64, 41, .3); }
+.logo-mark.sm { width: 22px; height: 22px; border-radius: 6px; font-size: 8px; box-shadow: none; }
+.logo-text b { display: block; font-size: 17px; font-weight: 800; letter-spacing: .1px; }
+.logo-text small { display: block; font-size: 11px; color: var(--text3); margin-top: -1px; }
+.msb-logo .collapse { margin-left: auto; color: var(--text3); }
+.nav-h { display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 700; color: var(--text3); letter-spacing: .5px; padding: 14px 10px 6px; }
+.nav-h .ic { width: 14px; height: 14px; }
+.nav-i { display: flex; align-items: center; gap: 11px; padding: 8px 10px; border-radius: 8px; font-size: 14px; color: #2B3037; border: 1px solid transparent; cursor: default; }
+.nav-i .ic { color: #66707D; }
+.nav-i.active { background: var(--primary-50); border-color: var(--primary-border); color: var(--primary-600); font-weight: 600; }
+.nav-i.active .ic { color: var(--primary); }
+.nav-sub { display: flex; align-items: center; gap: 8px; margin: 2px 0 2px 29px; padding: 7px 10px; border-radius: 8px; font-size: 13.5px; color: var(--text2); border-left: 2px solid var(--line); border-radius: 0 8px 8px 0; }
+.nav-sub.active { background: var(--primary-50); color: var(--primary-600); font-weight: 600; border-left-color: var(--primary); }
+.msb-main { display: flex; flex-direction: column; min-width: 0; }
+.msb-top { height: 64px; background: #fff; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 18px; padding: 0 28px; color: var(--text2); }
+.pill { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px; border: 1px solid var(--line); border-radius: 999px; background: #fff; font-size: 13px; color: var(--text); }
+.pill .ic { width: 16px; height: 16px; }
+.bell { position: relative; display: inline-flex; }
+.bell i { position: absolute; top: -6px; right: -7px; min-width: 17px; height: 17px; border-radius: 9px; background: var(--brand); color: #fff; font-size: 10px; font-style: normal; font-weight: 700; display: grid; place-items: center; border: 2px solid #fff; }
+.user { display: flex; align-items: center; gap: 10px; padding-left: 16px; border-left: 1px solid var(--line); color: var(--text); }
+.avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #FDBA8C, #F26A21); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 12.5px; flex: none; }
+.user b { display: block; font-size: 13.5px; } .user small { display: block; font-size: 11.5px; color: var(--text2); }
+.content { padding: 22px 32px 40px; }
+
+/* ---------- DMS shell ---------- */
+.dms-app { min-height: var(--h); display: grid; grid-template-rows: 60px 1fr; }
+.dms-top { background: var(--dms-head); color: #fff; display: flex; align-items: center; gap: 16px; padding: 0 24px; }
+.dms-mark { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, #14B8A6, #0F766E); display: grid; place-items: center; font-weight: 800; font-size: 15px; }
+.dms-top .brand b { display: block; font-size: 16px; letter-spacing: .3px; } .dms-top .brand small { display: block; font-size: 11px; color: #9FB0C6; }
+.dms-search { margin-left: 28px; width: 360px; height: 36px; border-radius: 8px; background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .12); display: flex; align-items: center; gap: 8px; padding: 0 12px; color: #9FB0C6; font-size: 13px; }
+.dms-top .user { border-left-color: rgba(255, 255, 255, .15); color: #fff; }
+.dms-top .user small { color: #9FB0C6; }
+.dms-top .avatar { background: linear-gradient(135deg, #5EEAD4, #0F766E); }
+.dms-body { display: grid; grid-template-columns: 220px 1fr; }
+.dms-side { background: #fff; border-right: 1px solid var(--line); padding: 16px 12px; }
+.dms-side .nav-i.active { background: var(--dms-50); border-color: #B7DDD7; color: var(--dms); }
+.dms-side .nav-i.active .ic { color: var(--dms); }
+.dms-app .content { padding: 22px 28px 40px; }
+
+/* ---------- page head ---------- */
+.crumb { font-size: 12.5px; color: var(--text3); display: flex; align-items: center; gap: 6px; }
+.crumb .ic { width: 12px; height: 12px; }
+.crumb span:last-child { color: var(--text2); }
+h1 { font-size: 24px; line-height: 1.25; margin: 6px 0 4px; font-weight: 800; letter-spacing: -.2px; display: flex; align-items: center; gap: 12px; }
+.sub { margin: 0; color: var(--text2); font-size: 14px; }
+.page-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 18px; }
+
+/* ---------- cards ---------- */
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+.card h3 { margin: 0; font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.card h3 .ic { color: var(--text2); }
+.card .desc { margin: 4px 0 0; color: var(--text2); font-size: 13px; }
+.card.soft { background: var(--primary-50); border-color: var(--primary-100); }
+.card.hl { border: 1.5px solid var(--primary); box-shadow: 0 0 0 4px rgba(242, 106, 33, .08); }
+.card-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+.divider { height: 1px; background: var(--line2); margin: 18px 0; }
+
+/* ---------- tags ---------- */
+.tag { display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; letter-spacing: 0; }
+.tag .ic { width: 13px; height: 13px; }
+.tag.lg { height: 30px; padding: 0 12px; font-size: 13px; }
+.tag.mini { height: 18px; padding: 0 7px; font-size: 10.5px; }
+.t-orange { background: var(--primary-50); color: var(--primary-600); border: 1px solid var(--primary-100); }
+.t-green { background: var(--green-50); color: var(--green); }
+.t-red { background: var(--red-50); color: var(--red); }
+.t-amber { background: var(--amber-50); color: var(--amber); }
+.t-blue { background: var(--blue-50); color: var(--blue); }
+.t-gray { background: #F1F3F5; color: var(--text2); }
+.t-dash { background: #fff; color: var(--amber); border: 1px dashed #E7B458; }
+.t-dms { background: var(--dms-50); color: var(--dms); }
+.t-solid { background: var(--primary); color: #fff; }
+
+/* ---------- buttons ---------- */
+.btn { height: 42px; padding: 0 20px; border-radius: 8px; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid transparent; cursor: pointer; white-space: nowrap; transition: filter .15s, background .15s; }
+.btn .ic { width: 17px; height: 17px; }
+.btn-lg { height: 48px; font-size: 15px; padding: 0 24px; }
+.btn-sm { height: 34px; font-size: 13px; padding: 0 14px; }
+.btn-block { width: 100%; }
+.btn-primary { background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(242, 106, 33, .28); }
+.btn-primary:hover { background: var(--primary-600); }
+.btn-outline { background: #fff; color: var(--primary-600); border-color: var(--primary); }
+.btn-ghost { background: #fff; color: var(--text); border-color: #D7DBE1; }
+.btn-ghost:hover { background: #F7F8FA; }
+.btn-danger { background: var(--red); color: #fff; }
+.btn-danger-o { background: #fff; color: var(--red); border-color: #F0B3B5; }
+.btn-dms { background: var(--dms); color: #fff; }
+.btn-dms:hover { background: var(--dms-600); }
+.btn[disabled] { background: #F1F3F5; color: var(--text3); border-color: var(--line); box-shadow: none; cursor: not-allowed; }
+.link { color: var(--primary-600); font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; text-decoration: none; }
+.link .ic { width: 14px; height: 14px; }
+.link.dms { color: var(--dms); }
+.icon-btn { width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center; color: var(--text2); cursor: pointer; }
+.icon-btn:hover { background: #F1F3F5; }
+
+/* ---------- forms ---------- */
+.label { font-size: 12.5px; color: var(--text2); margin-bottom: 6px; }
+.input { height: 44px; border: 1px solid #D7DBE1; border-radius: 8px; background: #fff; display: flex; align-items: center; gap: 10px; padding: 0 14px; font-size: 14px; }
+.input.locked { background: #F6F7F9; color: var(--text); font-weight: 600; }
+.input .ic { color: var(--text3); margin-left: auto; }
+.input .ph { color: var(--text3); }
+.cb { width: 20px; height: 20px; border-radius: 5px; border: 1.5px solid #B9C0CA; background: #fff; display: grid; place-items: center; flex: none; cursor: pointer; }
+.cb .ic { width: 14px; height: 14px; color: #fff; stroke-width: 3; display: none; }
+.cb.on { background: var(--primary); border-color: var(--primary); }
+.cb.on .ic { display: block; }
+.check-line { display: flex; gap: 12px; align-items: flex-start; font-size: 13.5px; }
+.switch { width: 42px; height: 24px; border-radius: 12px; background: #D3D8DF; position: relative; flex: none; cursor: pointer; transition: background .2s; }
+.switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: left .2s; }
+.switch.on { background: var(--primary); }
+.switch.on::after { left: 21px; }
+.otp { display: flex; gap: 8px; }
+.otp span { width: 44px; height: 50px; border: 1px solid #D7DBE1; border-radius: 8px; display: grid; place-items: center; font-size: 22px; font-weight: 700; background: #fff; }
+.otp span.f::after { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--text); }
+.otp span.cur { border: 2px solid var(--primary); box-shadow: 0 0 0 3px rgba(242, 106, 33, .15); }
+.radio { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid #B9C0CA; background: #fff; flex: none; display: grid; place-items: center; }
+.radio.on { border-color: var(--primary); }
+.radio.on::after { content: ''; width: 10px; height: 10px; border-radius: 50%; background: var(--primary); }
+.radio.dms.on { border-color: var(--dms); } .radio.dms.on::after { background: var(--dms); }
+
+/* ---------- stepper ---------- */
+.steps { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; }
+.step { position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 13px; color: var(--text3); text-align: center; }
+.step::before { content: ''; position: absolute; top: 15px; left: calc(-50% + 22px); right: calc(50% + 22px); height: 2px; background: repeating-linear-gradient(90deg, #D3D8DF 0 6px, transparent 6px 10px); }
+.step:first-child::before { display: none; }
+.step.done::before, .step.now::before { background: var(--primary); }
+.step .dot { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #D3D8DF; background: #fff; display: grid; place-items: center; font-weight: 700; font-size: 13px; color: var(--text3); position: relative; z-index: 1; }
+.step.done .dot { background: var(--primary); border-color: var(--primary); color: #fff; }
+.step.done .dot .ic { width: 16px; height: 16px; stroke-width: 3; }
+.step.now .dot { border-color: var(--primary); color: var(--primary); box-shadow: 0 0 0 5px rgba(242, 106, 33, .14); }
+.step.done, .step.now { color: var(--text); }
+.step.now { font-weight: 700; }
+.steps.dms .step.done::before, .steps.dms .step.now::before { background: var(--dms); }
+.steps.dms .step.done .dot { background: var(--dms); border-color: var(--dms); }
+.steps.dms .step.now .dot { border-color: var(--dms); color: var(--dms); box-shadow: 0 0 0 5px rgba(15, 118, 110, .14); }
+.step small { display: block; font-size: 11.5px; color: var(--text3); font-weight: 500; margin-top: -4px; }
+
+/* ---------- timeline ---------- */
+.tl { position: relative; }
+.tl-item { display: grid; grid-template-columns: 30px 1fr auto; column-gap: 12px; padding-bottom: 20px; position: relative; }
+.tl-item::before { content: ''; position: absolute; left: 14px; top: 30px; bottom: 2px; width: 2px; background: var(--green); opacity: .5; }
+.tl-item:last-child::before { display: none; }
+.tl-item.todo::before, .tl-item.now::before { background: repeating-linear-gradient(180deg, #D3D8DF 0 5px, transparent 5px 9px); opacity: 1; }
+.tl-ico { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; }
+.tl-ico .ic { width: 16px; height: 16px; stroke-width: 2.4; }
+.done .tl-ico { background: var(--green-50); color: var(--green); }
+.now .tl-ico { background: var(--primary-50); color: var(--primary); box-shadow: inset 0 0 0 2px var(--primary); }
+.todo .tl-ico { background: #F3F4F6; color: #B4BBC6; box-shadow: inset 0 0 0 1.5px #D3D8DF; }
+.fail .tl-ico { background: var(--red-50); color: var(--red); }
+.warn .tl-ico { background: var(--amber-50); color: var(--amber); }
+.tl-item b { font-size: 14px; display: block; margin-top: 4px; }
+.tl-item p { margin: 2px 0 0; font-size: 12.5px; color: var(--text2); }
+.tl-item.todo b, .tl-item.todo p { color: var(--text3); font-weight: 500; }
+.tl-item time { font-size: 12px; color: var(--text2); margin-top: 6px; font-variant-numeric: tabular-nums; }
+.tl-item.now time { color: var(--primary-600); font-weight: 700; }
+.screen.active:not(.noanim) .tl-item { animation: fadeUp .45s both; animation-delay: calc(var(--i) * .16s); }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ---------- kv / dl ---------- */
+.kv { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--line2); font-size: 14px; }
+.kv:last-child { border-bottom: 0; }
+.kv > span:first-child { color: var(--text2); }
+.kv > b, .kv > span:last-child { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.kv.total { background: var(--primary-50); border: 0; border-radius: 8px; padding: 12px 14px; margin-top: 6px; }
+.kv.total > b { color: var(--primary-600); font-size: 16px; }
+.dl { display: grid; grid-template-columns: 138px 1fr; row-gap: 8px; column-gap: 12px; margin: 12px 0 0; font-size: 13.5px; }
+.dl dt { color: var(--text2); }
+.dl dd { margin: 0; font-weight: 500; }
+.flow { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+.flow .ic { width: 14px; height: 14px; color: var(--text3); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { height: 26px; padding: 0 10px; border-radius: 6px; background: #F3F4F6; font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; }
+.fchip { height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid #D7DBE1; background: #fff; font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; }
+.fchip .ic { width: 14px; height: 14px; color: var(--text3); }
+.fchip.on { background: var(--text); color: #fff; border-color: var(--text); }
+
+/* ---------- tables ---------- */
+.tbl { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.tbl th { text-align: left; font-size: 12px; font-weight: 600; color: var(--text2); background: #F7F8FA; padding: 10px 14px; white-space: nowrap; }
+.tbl th.r, .tbl td.r { text-align: right; }
+.tbl td { padding: 12px 14px; border-top: 1px solid var(--line2); vertical-align: middle; }
+.tbl td small { display: block; color: var(--text2); font-size: 12px; margin-top: 1px; }
+.tbl tr.sel td { background: #FFF8F3; }
+.tbl tr.sel td:first-child { box-shadow: inset 3px 0 0 var(--primary); }
+.tbl-wrap { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.card > .tbl-flush { margin: 0 -20px -20px; width: calc(100% + 40px); }
+.card > .tbl-flush th:first-child, .card > .tbl-flush td:first-child { padding-left: 20px; }
+.card > .tbl-flush th:last-child, .card > .tbl-flush td:last-child { padding-right: 20px; }
+.prod { display: flex; align-items: center; gap: 12px; }
+.thumb { width: 38px; height: 38px; border-radius: 8px; background: linear-gradient(135deg, #F1F5F4, #DDEAE7); display: grid; place-items: center; color: var(--dms); flex: none; }
+.pos { color: var(--green); font-weight: 600; }
+.neg { color: var(--red); font-weight: 600; }
+
+/* ---------- alerts / toast ---------- */
+.alert { display: flex; gap: 14px; align-items: flex-start; padding: 14px 18px; border-radius: 12px; border: 1px solid; }
+.alert .a-ico { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; flex: none; }
+.alert b { display: block; font-size: 14.5px; }
+.alert p { margin: 2px 0 0; font-size: 13px; color: var(--text2); }
+.alert .btn { margin-left: auto; align-self: center; }
+.a-info { background: var(--blue-50); border-color: #CFE0FD; } .a-info .a-ico { background: #fff; color: var(--blue); }
+.a-warn { background: var(--amber-50); border-color: #F5D9A3; } .a-warn .a-ico { background: #fff; color: var(--amber); }
+.a-error { background: var(--red-50); border-color: #F6C6C8; } .a-error .a-ico { background: #fff; color: var(--red); }
+.a-success { background: var(--green-50); border-color: #BFE6CF; } .a-success .a-ico { background: #fff; color: var(--green); }
+.a-orange { background: var(--primary-50); border-color: var(--primary-100); } .a-orange .a-ico { background: #fff; color: var(--primary); }
+.toast { position: absolute; right: 28px; top: 76px; z-index: 5; width: 460px; background: #1D2129; color: #fff; border-radius: 12px; padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; box-shadow: var(--shadow); }
+.toast .t-ok { width: 26px; height: 26px; border-radius: 50%; background: var(--green); display: grid; place-items: center; flex: none; }
+.toast .t-ok .ic { width: 15px; height: 15px; stroke-width: 3; }
+.toast b { display: block; font-size: 13.5px; } .toast p { margin: 2px 0 0; font-size: 12.5px; color: #B8BFCA; }
+
+/* ---------- misc components ---------- */
+.stat { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+.stat .s-l { font-size: 12.5px; color: var(--text2); display: flex; align-items: center; gap: 8px; }
+.stat .s-l .ic { width: 16px; height: 16px; color: var(--text3); }
+.stat .s-v { font-size: 22px; font-weight: 800; margin-top: 6px; font-variant-numeric: tabular-nums; letter-spacing: -.3px; }
+.stat .s-n { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.bar { height: 10px; border-radius: 6px; background: #EEF0F3; overflow: hidden; display: flex; }
+.bar i { display: block; height: 100%; background: var(--primary); }
+.bar i.b2 { background: #FDBA8C; }
+.bar i.g { background: var(--green); }
+.bar.lg { height: 14px; border-radius: 8px; }
+.legend { display: flex; gap: 16px; font-size: 12.5px; color: var(--text2); margin-top: 8px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.ilist { display: flex; flex-direction: column; gap: 14px; margin-top: 14px; }
+.ilist > div { display: flex; gap: 12px; font-size: 13.5px; align-items: flex-start; }
+.ilist .ii { width: 32px; height: 32px; border-radius: 8px; background: var(--primary-50); color: var(--primary); display: grid; place-items: center; flex: none; }
+.ilist .ii .ic { width: 16px; height: 16px; }
+.num-dot { width: 24px; height: 24px; border-radius: 50%; background: var(--primary-50); color: var(--primary-600); font-weight: 700; font-size: 12px; display: grid; place-items: center; flex: none; }
+.feature { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--text); }
+.feature .ic { width: 16px; height: 16px; color: var(--primary); margin-top: 2px; }
+.qr { background: #fff; padding: 10px; border: 1px solid var(--line); border-radius: 10px; display: inline-block; }
+.qr svg { display: block; }
+.doc { border: 1px solid var(--line); border-radius: 10px; background: linear-gradient(#fff, #FAFBFC); padding: 16px 18px; position: relative; }
+.doc .d-title { text-align: center; font-weight: 800; font-size: 13px; letter-spacing: .6px; }
+.doc .d-no { text-align: center; font-size: 11px; color: var(--text3); margin-top: 2px; }
+.doc .d-l { height: 7px; border-radius: 4px; background: #EDEFF3; margin-top: 8px; }
+.doc .d-sign { display: flex; justify-content: space-between; margin-top: 14px; font-size: 10.5px; color: var(--text3); }
+.doc .stamp { position: absolute; right: 16px; bottom: 30px; font-size: 10px; font-weight: 700; color: var(--primary); border: 1.5px solid var(--primary); border-radius: 6px; padding: 3px 6px; transform: rotate(-8deg); opacity: .8; }
+.qa { display: grid; grid-template-columns: repeat(4, 1fr); }
+.qa > div { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 6px 8px; font-size: 13px; font-weight: 600; text-align: center; border-left: 1px solid var(--line2); cursor: pointer; }
+.qa > div:first-child { border-left: 0; }
+.qa .q-ic { width: 44px; height: 44px; border-radius: 50%; background: var(--primary-50); color: var(--primary); display: grid; place-items: center; }
+.qa .q-ic .ic { width: 20px; height: 20px; }
+.sigil { width: 36px; height: 36px; border-radius: 9px; display: grid; place-items: center; font-weight: 800; font-size: 11px; flex: none; }
+.hash { font-family: 'SF Mono', 'JetBrains Mono', Menlo, Consolas, monospace; font-size: 12.5px; background: #F6F7F9; border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; }
+.sdot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
+.sdot.g { background: var(--green); box-shadow: 0 0 0 3px var(--green-50); }
+.sdot.r { background: var(--red); box-shadow: 0 0 0 3px var(--red-50); }
+
+/* consent items */
+.citem { display: flex; gap: 16px; padding: 18px; border: 1px solid var(--line); border-radius: 12px; margin-top: 12px; background: #fff; }
+.citem.sel { border: 1.5px solid var(--primary); background: #FFFBF8; }
+.citem .c-ctrl { padding-top: 2px; }
+.citem .c-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 15px; font-weight: 700; }
+
+/* payment options */
+.popt { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; cursor: pointer; background: #fff; }
+.popt + .popt { margin-top: 10px; }
+.popt.on { border: 1.5px solid var(--dms); background: #FAFDFC; }
+.popt.msbopt.on { border-color: var(--primary); background: #FFFAF6; box-shadow: 0 0 0 4px rgba(242, 106, 33, .08); }
+.popt.dis { background: #F7F8FA; border-style: dashed; cursor: not-allowed; }
+.popt b { font-size: 14.5px; }
+.popt .p-sub { font-size: 12.5px; color: var(--text2); margin-top: 2px; }
+
+/* drawer + modal */
+.drawer { background: #fff; border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 22px; }
+.sec-h { font-size: 11.5px; font-weight: 700; letter-spacing: .5px; color: var(--text3); margin: 18px 0 6px; }
+.acc { border: 1px solid var(--line2); border-radius: 10px; }
+.acc > div { padding: 10px 12px; border-top: 1px solid var(--line2); display: flex; gap: 8px; align-items: flex-start; font-size: 13.5px; }
+.acc > div:first-child { border-top: 0; }
+.acc .ic { width: 16px; height: 16px; color: var(--text3); margin-top: 2px; }
+.overlay { position: absolute; inset: 0; background: rgba(17, 24, 39, .52); z-index: 10; }
+.modal { position: absolute; z-index: 11; left: 50%; top: 150px; transform: translateX(-50%); margin-left: 124px; width: 840px; background: #fff; border-radius: 16px; box-shadow: 0 24px 60px rgba(0, 0, 0, .25); }
+.modal-h { padding: 24px 28px 18px; border-bottom: 1px solid var(--line2); display: flex; gap: 16px; align-items: flex-start; }
+.modal-b { padding: 22px 28px; }
+.modal-f { padding: 18px 28px 24px; border-top: 1px solid var(--line2); }
+.m-ico { width: 44px; height: 44px; border-radius: 12px; background: var(--red-50); color: var(--red); display: grid; place-items: center; flex: none; }
+.cons { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-top: 1px solid var(--line2); }
+.cons:first-child { border-top: 0; padding-top: 0; }
+.cons .c-i { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; flex: none; }
+.cons .c-i .ic { width: 16px; height: 16px; }
+.cons b { font-size: 14px; display: block; } .cons p { margin: 2px 0 0; font-size: 12.5px; color: var(--text2); }
+
+/* gauge */
+.gauge { position: relative; width: 220px; height: 128px; }
+.gauge .g-v { position: absolute; left: 0; right: 0; top: 58px; text-align: center; font-size: 40px; font-weight: 800; letter-spacing: -1px; }
+.gauge .g-s { position: absolute; left: 0; right: 0; top: 106px; text-align: center; font-size: 12.5px; color: var(--text2); }
+.factor { display: grid; grid-template-columns: 28px 1fr 160px; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line2); font-size: 13.5px; }
+.factor:first-child { border-top: 0; }
+.factor .f-i { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; }
+.factor .f-i .ic { width: 15px; height: 15px; stroke-width: 2.4; }
+.factor .bar { height: 8px; }
+
+/* ---------- presenter (không xuất ra ảnh) ---------- */
+#presenter { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 100; display: flex; align-items: center; gap: 6px; background: rgba(17, 24, 39, .92); color: #fff; border-radius: 14px; padding: 6px; box-shadow: 0 10px 30px rgba(0, 0, 0, .3); font-size: 13px; backdrop-filter: blur(6px); }
+#presenter button { background: transparent; border: 0; color: #fff; height: 36px; min-width: 36px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; padding: 0 10px; font-size: 13px; }
+#presenter button:hover { background: rgba(255, 255, 255, .12); }
+#presenter button.on { background: rgba(242, 106, 33, .9); }
+#presenter select { background: rgba(255, 255, 255, .1); color: #fff; border: 0; height: 36px; border-radius: 9px; padding: 0 10px; font-family: inherit; font-size: 13px; max-width: 330px; }
+#presenter select option { color: #111; }
+#presenter .p-time { padding: 0 10px; color: #FDBA8C; font-weight: 600; white-space: nowrap; }
+#presenter .sep { width: 1px; height: 22px; background: rgba(255, 255, 255, .2); }
+body.export #presenter, body.bare #presenter { display: none; }
+body.hint [data-go] { outline: 2px solid rgba(46, 124, 246, .85); outline-offset: 3px; box-shadow: 0 0 0 7px rgba(46, 124, 246, .18); border-radius: 8px; }
+body.hints-on [data-go] { outline: 2px dashed rgba(46, 124, 246, .7); outline-offset: 3px; }
+[data-go] { cursor: pointer; }
+#loader { position: fixed; inset: 0; z-index: 90; display: none; place-items: center; background: rgba(245, 246, 248, .78); backdrop-filter: blur(3px); }
+#loader.on { display: grid; }
+#loader .l-card { background: #fff; border-radius: 16px; box-shadow: var(--shadow); padding: 26px 30px; display: flex; gap: 16px; align-items: center; max-width: 520px; }
+#loader .spin { width: 34px; height: 34px; border-radius: 50%; border: 3px solid var(--primary-100); border-top-color: var(--primary); animation: spin .8s linear infinite; flex: none; }
+#loader b { display: block; font-size: 15px; } #loader p { margin: 3px 0 0; color: var(--text2); font-size: 13px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+body.export .screen .tl-item { animation: none !important; }
+
+/* ---------- fixes sau review ---------- */
+.switch { display: inline-block; vertical-align: middle; }
+.grid > * { min-width: 0; }
+.alert p b { display: inline; font-size: inherit; }
+.popt p b { font-size: inherit; }
+.card.soft .num-dot { background: #fff; }
+.legend { flex-wrap: wrap; gap: 6px 14px; }
+.legend span { white-space: nowrap; }
+.nowrap td, td.nowrap, .nowrap th { white-space: nowrap; }
+.tbl td .sub2 { display: block; color: var(--text2); font-size: 12px; margin-top: 3px; font-weight: 500; }
+
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div id="loader"></div>
+<div id="presenter"></div>
+<script>
+/* MSB Open SCF · PO-Express — prototype hi-fi (web desktop 1440).
+   Điều hướng: phần tử có data-go="NN" chuyển sang màn NN; data-wait hiện màn chờ trước khi chuyển.
+   Tham số URL: ?export=1 (ẩn thanh trình chiếu, tắt hiệu ứng) · ?measure=1 (đo chiều cao từng màn) · #/NN (mở màn NN). */
+
+/* ================= Icons (nét, kiểu Lucide, vẽ tay để chạy offline) ================= */
+const I = {
+  home: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  wallet: '<path d="M19 7V5.5A1.5 1.5 0 0 0 17.5 4H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6"/><path d="M16.5 14h.01"/>',
+  hash: '<path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/>',
+  transfer: '<path d="M8 3 4 7l4 4M4 7h16M16 21l4-4-4-4M20 17H4"/>',
+  bill: '<path d="M5 2v20l2.5-1.5L10 22l2-1.5 2 1.5 2.5-1.5L19 22V2l-2.5 1.5L14 2l-2 1.5L10 2 7.5 3.5z"/><path d="M9 8h6M9 12h6M9 16h4"/>',
+  gauge: '<path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/>',
+  banknote: '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/>',
+  link: '<path d="M9 17H7A5 5 0 0 1 7 7h2M15 7h2a5 5 0 1 1 0 10h-2M8 12h8"/>',
+  shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>',
+  sliders: '<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/>',
+  users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+  bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+  help: '<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/>',
+  headset: '<path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/>',
+  down: '<path d="m6 9 6 6 6-6"/>', up: '<path d="m18 15-6-6-6 6"/>', right: '<path d="m9 18 6-6-6-6"/>', left: '<path d="m15 18-6-6 6-6"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  checkc: '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
+  x: '<path d="M18 6 6 18M6 6l12 12"/>',
+  xc: '<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6M9 9l6 6"/>',
+  alert: '<path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4M12 17h.01"/>',
+  info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
+  lock: '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  qr: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/>',
+  download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
+  printer: '<path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>',
+  clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+  refresh: '<path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/>',
+  calendar: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  cart: '<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2 2h3l2.7 12.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/>',
+  package: '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7 12 12l8.7-5M12 22V12"/>',
+  truck: '<path d="M10 17h4V5H2v12h3M20 17h2v-3.3a4 4 0 0 0-1.2-2.9L19 9h-5v8h1"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
+  file: '<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>',
+  pen: '<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+  eye: '<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7"/><circle cx="12" cy="12" r="3"/>',
+  db: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5M3 12a9 3 0 0 0 18 0"/>',
+  building: '<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M12 6h.01M16 6h.01M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/>',
+  filter: '<path d="M22 3H2l8 9.46V19l4 2v-8.54z"/>',
+  ext: '<path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
+  arrow: '<path d="M5 12h14M12 5l7 7-7 7"/>',
+  up2: '<path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/>',
+  down2: '<path d="m22 17-8.5-8.5-5 5L2 7"/><path d="M16 17h6v-6"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>', minus: '<path d="M5 12h14"/>',
+  zap: '<path d="M13 2 3 14h9l-1 8 10-12h-9z"/>',
+  wifioff: '<path d="M12 20h.01M8.5 16.4a5 5 0 0 1 7 0M2 8.8a15 15 0 0 1 4.2-2.6M10.7 5a15 15 0 0 1 11.3 3.8M16.9 11.3a10 10 0 0 1 2.2 1.6M5 13a10 10 0 0 1 5.2-2.8M2 2l20 20"/>',
+  msg: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+  phone: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/>',
+  grid: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>',
+  menu: '<path d="M3 6h18M3 12h18M3 18h18"/>',
+  panel: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M16 15l-3-3 3-3"/>',
+  send: '<path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/>',
+  spark: '<path d="M12 3 13.9 8.8 20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2z"/>',
+  store: '<path d="M3 9l1.5-5h15L21 9M3 9v11h18V9M3 9h18M9 20v-6h6v6"/>',
+  history: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/>',
+  tag: '<path d="M12.6 2.6A2 2 0 0 0 11.2 2H4a2 2 0 0 0-2 2v7.2a2 2 0 0 0 .6 1.4l8.7 8.7a2.4 2.4 0 0 0 3.4 0l6.6-6.6a2.4 2.4 0 0 0 0-3.4z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
+  chart: '<path d="M3 3v18h18"/><path d="M7 16v-4M12 16V8M17 16v-7"/>',
+  trash: '<path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+  map: '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>',
+  undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+  cpu: '<rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/>',
+  fingerprint: '<path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4M14 13.12c0 2.38 0 6.38-1 8.88M17.29 21.02c.12-.6.43-2.3.5-3.02M2 12a10 10 0 0 1 18-6M2 16h.01M21.8 16c.2-2 .131-5.354 0-6M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2M8.65 22c.21-.66.45-1.32.57-2M9 6.8a6 6 0 0 1 9 5.2v2"/>',
+};
+const ic = (n, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${I[n] || ''}</svg>`;
+
+/* ================= Helpers ================= */
+const tag = (t, v = 'gray', icon = '', cls = '') => `<span class="tag t-${v} ${cls}">${icon ? ic(icon) : ''}${t}</span>`;
+const kv = (k, v, cls = '') => `<div class="kv ${cls}"><span>${k}</span><b>${v}</b></div>`;
+const crumb = (...p) => `<div class="crumb">${p.map((x, i) => `<span>${x}</span>${i < p.length - 1 ? ic('right') : ''}`).join('')}</div>`;
+const steps = (list, cur, cls = '') => `<div class="steps ${cls}">${list.map((s, i) => {
+  const [l, sm] = Array.isArray(s) ? s : [s, ''];
+  const st = i < cur ? 'done' : i === cur ? 'now' : '';
+  return `<div class="step ${st}"><div class="dot">${i < cur ? ic('check') : i + 1}</div><div>${l}${sm ? `<small>${sm}</small>` : ''}</div></div>`;
+}).join('')}</div>`;
+const TLI = { done: 'check', now: 'pen', todo: 'clock', fail: 'x', warn: 'alert' };
+const tl = (items) => `<div class="tl">${items.map(([s, t, d, time, icon], i) =>
+  `<div class="tl-item ${s}" style="--i:${i}"><div class="tl-ico">${ic(icon || TLI[s])}</div><div><b>${t}</b>${d ? `<p>${d}</p>` : ''}</div><time>${time || ''}</time></div>`).join('')}</div>`;
+const otp = (filled = 0, cur = -1) => `<div class="otp">${[0, 1, 2, 3, 4, 5].map(i => `<span class="${i < filled ? 'f' : ''} ${i === cur ? 'cur' : ''}"></span>`).join('')}</div>`;
+const cb = (on) => `<span class="cb ${on ? 'on' : ''}">${ic('check')}</span>`;
+const sw = (on) => `<span class="switch ${on ? 'on' : ''}"></span>`;
+const radio = (on, cls = '') => `<span class="radio ${cls} ${on ? 'on' : ''}"></span>`;
+
+function qr(px = 150, seed = 7, logo = true) {
+  const n = 25, m = px / n;
+  let r = seed * 7919 + 17;
+  const rnd = () => ((r = (r * 9301 + 49297) % 233280) / 233280);
+  const inF = (i, j) => (i < 8 && j < 8) || (i < 8 && j > n - 9) || (i > n - 9 && j < 8) || (logo && i > 9 && i < 15 && j > 9 && j < 15);
+  let o = '';
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) if (!inF(i, j) && rnd() < 0.47) o += `<rect x="${(i * m).toFixed(2)}" y="${(j * m).toFixed(2)}" width="${(m + .3).toFixed(2)}" height="${(m + .3).toFixed(2)}"/>`;
+  const f = (x, y) => `<rect x="${x * m}" y="${y * m}" width="${7 * m}" height="${7 * m}" rx="${m}"/><rect x="${(x + 1) * m}" y="${(y + 1) * m}" width="${5 * m}" height="${5 * m}" fill="#fff" rx="${m * .6}"/><rect x="${(x + 2) * m}" y="${(y + 2) * m}" width="${3 * m}" height="${3 * m}" rx="${m * .5}"/>`;
+  const lg = logo ? `<rect x="${10.3 * m}" y="${10.3 * m}" width="${4.4 * m}" height="${4.4 * m}" rx="${m}" fill="#EF4029"/><text x="${12.5 * m}" y="${13 * m}" font-size="${m * 1.45}" font-weight="800" fill="#fff" text-anchor="middle" font-family="Be Vietnam Pro, Arial">MSB</text>` : '';
+  return `<svg width="${px}" height="${px}" viewBox="0 0 ${px} ${px}" fill="#1D2129">${o}${f(0, 0)}${f(n - 7, 0)}${f(0, n - 7)}${lg}</svg>`;
+}
+
+function gauge(v, max = 1000, th = 700, grade = 'B+') {
+  const R = 86, cx = 110, cy = 112;
+  const pt = (t, rr = R) => { const a = Math.PI * (1 - t); return [cx + rr * Math.cos(a), cy - rr * Math.sin(a)]; };
+  const [x1, y1] = pt(v / max);
+  const [ta, tb] = [pt(th / max, R - 13), pt(th / max, R + 13)];
+  const [lx, ly] = pt(th / max, R + 26);
+  return `<div class="gauge"><svg width="220" height="128" viewBox="0 0 220 128">
+    <defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#FDBA8C"/><stop offset="1" stop-color="#F26A21"/></linearGradient></defs>
+    <path d="M${cx - R} ${cy} A${R} ${R} 0 0 1 ${cx + R} ${cy}" stroke="#EEF0F3" stroke-width="16" fill="none" stroke-linecap="round"/>
+    <path d="M${cx - R} ${cy} A${R} ${R} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}" stroke="url(#gg)" stroke-width="16" fill="none" stroke-linecap="round"/>
+    <line x1="${ta[0].toFixed(1)}" y1="${ta[1].toFixed(1)}" x2="${tb[0].toFixed(1)}" y2="${tb[1].toFixed(1)}" stroke="#1D2129" stroke-width="2.5" stroke-linecap="round"/>
+    <text x="${lx.toFixed(1)}" y="${(ly + 2).toFixed(1)}" font-size="10.5" font-weight="700" fill="#5B6472" text-anchor="middle" font-family="Be Vietnam Pro, Arial">${th}</text>
+  </svg><div class="g-v">${v}</div><div class="g-s">/ ${max} · Hạng ${grade}</div></div>`;
+}
+
+/* ================= Data ================= */
+const NPP = 'Công ty TNHH TM Minh Phát';
+const SELLER = 'NPP Cấp 1 Tân Phú';
+const PRODUCTS = [
+  ['Bia Sài Gòn Lager', 'SGL-24L330', 'Thùng 24 lon 330ml', 400, '255.000', '102.000.000'],
+  ['Bia 333', 'B333-24L330', 'Thùng 24 lon 330ml', 300, '270.000', '81.000.000'],
+  ['Bia Sài Gòn Special', 'SGS-24C330', 'Thùng 24 chai 330ml', 200, '330.000', '66.000.000'],
+  ['Bia Sài Gòn Chill', 'SGC-24L330', 'Thùng 24 lon 330ml', 100, '360.000', '36.000.000'],
+];
+
+/* ================= Shells ================= */
+const nav = (key, label, icon, active, go) =>
+  `<div class="nav-i ${key === active ? 'active' : ''}" ${go ? `data-go="${go}"` : ''}>${ic(icon)}${label}</div>`;
+
+function msb(active, body, bell = 2) {
+  return `<div class="msb">
+  <aside class="msb-side">
+    <div class="msb-logo"><div class="logo-mark">MSB</div><div class="logo-text"><b>MSB Business</b><small>Ngân hàng số</small></div><span class="collapse">${ic('panel')}</span></div>
+    ${nav('home', 'Trang chủ', 'home', active, '06')}
+    <div class="nav-h">TÀI KHOẢN ${ic('up')}</div>
+    ${nav('acc', 'Quản lý tài khoản', 'wallet', active)}
+    ${nav('va', 'Tài khoản định danh', 'hash', active, '09')}
+    <div class="nav-h">CHUYỂN KHOẢN &amp; THANH TOÁN ${ic('up')}</div>
+    ${nav('tf', 'Chuyển khoản', 'transfer', active)}
+    ${nav('bill', 'Thanh toán dịch vụ', 'bill', active)}
+    <div class="nav-h">TÍN DỤNG ${ic('up')}</div>
+    ${nav('limit', 'Hạn mức tín dụng', 'gauge', active)}
+    ${nav('disb', 'Giải ngân', 'banknote', active)}
+    ${nav('scf', 'Tài trợ chuỗi', 'link', active)}
+    <div class="nav-sub ${active === 'pox' ? 'active' : ''}">PO-Express ${tag('Mới', 'orange', '', 'mini')}</div>
+    <div class="nav-h">DỮ LIỆU &amp; QUYỀN RIÊNG TƯ ${ic('up')}</div>
+    ${nav('consent', 'Quản lý chia sẻ dữ liệu', 'shield', active, '07')}
+    <div class="nav-h">TRUNG TÂM QUẢN TRỊ ${ic('up')}</div>
+    ${nav('appr', 'Quy trình duyệt', 'sliders', active)}
+    ${nav('perm', 'Phân quyền', 'users', active)}
+  </aside>
+  <div class="msb-main">
+    <header class="msb-top">
+      <span class="pill">${ic('headset')} Gọi Tổng đài ${ic('down')}</span>
+      <span class="grow"></span>
+      ${ic('search')} ${ic('help')}
+      <span class="bell">${ic('bell')}${bell ? `<i>${bell}</i>` : ''}</span>
+      <div class="user"><div class="avatar">MP</div><div><b>Trần Minh Phát</b><small>Chủ doanh nghiệp · C2-HCM-0147</small></div>${ic('down')}</div>
+    </header>
+    <main class="content">${body}</main>
+  </div></div>`;
+}
+
+function dms(active, body) {
+  const items = [['home', 'Tổng quan', 'grid'], ['order', 'Đặt hàng', 'cart'], ['orders', 'Đơn hàng', 'package'], ['debt', 'Công nợ', 'file'],
+    ['promo', 'Khuyến mãi', 'tag'], ['fin', 'Tài chính', 'wallet'], ['report', 'Báo cáo', 'chart']];
+  return `<div class="dms-app">
+    <header class="dms-top">
+      <div class="dms-mark">S</div><div class="brand"><b>SABECO DMS</b><small>Cổng nhà phân phối · bản mô phỏng</small></div>
+      <div class="dms-search">${ic('search')} Tìm sản phẩm, đơn hàng…</div>
+      <span class="grow"></span>
+      <span class="bell" style="color:#C9D4E3">${ic('bell')}<i>1</i></span>
+      <div class="user"><div class="avatar">MP</div><div><b>${NPP}</b><small>NPP Cấp 2 · C2-HCM-0147</small></div></div>
+    </header>
+    <div class="dms-body">
+      <aside class="dms-side">${items.map(([k, l, i]) => nav(k, l, i, active)).join('')}
+        <div class="card soft" style="margin-top:18px;padding:14px">
+          <div class="row" style="gap:8px"><div class="logo-mark sm">MSB</div><b style="font-size:13px">PO-Express</b></div>
+          <div class="xs muted mt8">Tài trợ đơn hàng bởi MSB. Hạn mức cập nhật theo từng đơn.</div>
+        </div>
+      </aside>
+      <main class="content">${body}</main>
+    </div></div>`;
+}
+
+const head = (crumbs, title, sub, right = '') => `${crumb(...crumbs)}<div class="page-head"><div><h1>${title}</h1>${sub ? `<p class="sub">${sub}</p>` : ''}</div>${right}</div>`;
+
+/* ================= Screens ================= */
+function s01() {
+  const item = (on, ctrl, title, tags, rows, extra = '') => `
+    <div class="citem ${on ? 'sel' : ''}"><div class="c-ctrl">${ctrl}</div><div class="grow">
+      <div class="c-title">${title} ${tags}</div>
+      <dl class="dl">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>${extra}
+    </div></div>`;
+  return msb('pox', `
+    ${head(['Tín dụng', 'Tài trợ chuỗi', 'PO-Express', 'Đăng ký'], 'Đăng ký PO-Express',
+      `Tài trợ theo đơn hàng trên SABECO DMS · ${NPP} · Mã NPP C2-HCM-0147`, tag('Bước 2/3', 'orange', '', 'lg'))}
+    <div class="card" style="padding:18px 28px">${steps([['Liên kết mã NPP', 'Đã xác minh C2-HCM-0147'], ['Đồng ý chia sẻ dữ liệu', 'Đang thực hiện'], ['Xét duyệt hạn mức', 'Tối đa 24 giờ']], 1)}</div>
+    <div class="grid mt16" style="grid-template-columns:1fr 372px">
+      <div class="card">
+        <h3>Chọn dữ liệu bạn đồng ý chia sẻ</h3>
+        <p class="desc">Mỗi mục đích là một lựa chọn riêng. Mục tùy chọn mặc định tắt — có thể bật sau tại <b>Quản lý chia sẻ dữ liệu</b>.</p>
+        ${item(true, cb(true), 'Giao dịch DMS 12 tháng', tag('Bắt buộc cho PO-Express', 'orange'), [
+          ['Nguồn → Bên nhận', `<span class="flow">SABECO DMS ${ic('arrow')} MSB</span>`],
+          ['Dữ liệu', `<div class="chips"><span class="chip">Hồ sơ NPP</span><span class="chip">Đơn hàng (PO)</span><span class="chip">Công nợ với NPP Cấp 1</span><span class="chip">Giao hàng</span></div>`],
+          ['Mục đích', 'Chấm điểm tín dụng · cấp hạn mức · đối soát giao hàng'],
+          ['Phạm vi dữ liệu', '12 tháng gần nhất'],
+          ['Hiệu lực', '12 tháng · 18/09/2026 – 18/09/2027']],
+          `<a class="link mt12">Xem chi tiết trường dữ liệu ${ic('right')}</a>`)}
+        ${item(false, sw(false), 'Dòng tiền tại ngân hàng khác (AIS)', tag('Tùy chọn', 'gray') + tag('Dữ liệu nhạy cảm', 'dash', 'alert'), [
+          ['Nguồn → Bên nhận', `<span class="flow">Ngân hàng bạn chọn ${ic('arrow')} MSB</span> <span class="muted">· Open API theo TT 64/2024</span>`],
+          ['Dữ liệu', 'Số dư, lịch sử giao dịch 12 tháng gần nhất'],
+          ['Mục đích', 'Tín hiệu bổ sung ngoài DMS — có thể giúp nâng hạn mức'],
+          ['Hiệu lực', 'Tối đa 180 ngày · <span class="muted">từ chối vẫn được xét vay bình thường</span>']])}
+        ${item(false, sw(false), 'Chỉ số tổng hợp cho SABECO', tag('Tùy chọn', 'gray'), [
+          ['Nguồn → Bên nhận', `<span class="flow">MSB ${ic('arrow')} SABECO</span>`],
+          ['Dữ liệu', 'Chỉ số ẩn danh theo địa bàn — không chia sẻ dữ liệu từng NPP'],
+          ['Mục đích', 'Báo cáo sức khỏe mạng lưới phân phối (giai đoạn 3)']])}
+        <div class="divider"></div>
+        <div class="check-line">${cb(true)}<div>Tôi đã đọc <a class="link" style="font-size:13.5px">Điều khoản chia sẻ dữ liệu</a> và hiểu rằng thông tin giao dịch, tín dụng là dữ liệu cá nhân nhạy cảm theo NĐ 356/2025/NĐ-CP.</div></div>
+        <div class="between mt20" style="align-items:flex-end">
+          <div><div class="label">Mã OTP đã gửi tới 09•• ••• 147</div>${otp(6)}<div class="xs faint mt8">Gửi lại mã sau 00:48</div></div>
+          <div class="row" style="gap:12px"><button class="btn btn-ghost btn-lg">Hủy</button>
+            <button class="btn btn-primary btn-lg" data-go="02" data-wait="Đã ghi nhận đồng ý chia sẻ dữ liệu|Biên bản đồng ý đã gửi qua email. Ngày 20/09 RM phê duyệt hạn mức 300.000.000 đ → chuyển tới 22/09, NPP đặt đơn mới trên DMS.">Xác nhận đồng ý ${ic('arrow')}</button></div>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="card"><h3>${ic('shield')} Quyền của bạn</h3>
+          <div class="ilist">
+            <div><span class="ii">${ic('eye')}</span><span>Xem dữ liệu đang chia sẻ và ai đã truy cập — bất cứ lúc nào.</span></div>
+            <div><span class="ii">${ic('undo')}</span><span>Rút đồng ý bất cứ lúc nào: dừng giải ngân mới ngay; khoản vay hiện có vẫn thu theo hợp đồng.</span></div>
+            <div><span class="ii">${ic('trash')}</span><span>MSB cam kết xóa dữ liệu trong <b>72 giờ</b> sau khi bạn rút đồng ý (trừ hồ sơ pháp luật bắt buộc lưu).</span></div>
+            <div><span class="ii">${ic('map')}</span><span>Dữ liệu lưu tại Việt Nam, mã hóa khi truyền và khi lưu trữ.</span></div>
+          </div></div>
+        <div class="card"><h3>Các bên liên quan</h3>
+          <div class="ilist">
+            <div><span class="sigil" style="background:var(--dms-50);color:var(--dms)">SAB</span><div><b>SABECO</b><div class="xs muted">Bên kiểm soát dữ liệu DMS</div></div></div>
+            <div><span class="logo-mark">MSB</span><div><b>MSB</b><div class="xs muted">Bên kiểm soát và xử lý dữ liệu tín dụng</div></div></div>
+            <div><span class="sigil" style="background:#F1F3F5;color:var(--text2)">${ic('cpu')}</span><div><b>IBM · Mambu · FPT Software</b><div class="xs muted">Bên xử lý theo hợp đồng, không khai thác dữ liệu</div></div></div>
+          </div></div>
+        <div class="card soft"><h3>Sau khi đồng ý</h3>
+          <div class="ilist" style="gap:10px">
+            <div><span class="num-dot">1</span><span>MSB xét duyệt hạn mức PO-Express</span></div>
+            <div><span class="num-dot">2</span><span>Giai đoạn pilot: cán bộ RM duyệt trong tối đa 24 giờ</span></div>
+            <div><span class="num-dot">3</span><span>Kết quả hiển thị trên SABECO DMS và MSB Business</span></div>
+          </div></div>
+        <div class="xs faint">Căn cứ: TT 64/2024/TT-NHNN · Luật 91/2025/QH15 · NĐ 356/2025/NĐ-CP</div>
+      </div>
+    </div>`, 0);
+}
+
+function productRows(rows) {
+  return rows.map(([n, sku, spec, q, p, t]) => `<tr><td><div class="prod"><span class="thumb">${ic('package')}</span><div><b style="font-weight:600">${n}</b><small>${sku}</small></div></div></td>
+    <td class="muted">${spec}</td><td class="r num">${q}</td><td class="r num">${p}</td><td class="r num"><b>${t}</b></td></tr>`).join('');
+}
+
+function orderLeft(rows, total) {
+  return `<div class="card"><div class="card-head"><h3>${ic('cart')} Sản phẩm (${rows.length})</h3><span class="xs faint">Giá minh họa · đã gồm VAT</span></div>
+    <table class="tbl tbl-flush"><thead><tr><th>Sản phẩm</th><th>Quy cách</th><th class="r">SL (thùng)</th><th class="r">Đơn giá</th><th class="r">Thành tiền</th></tr></thead>
+    <tbody>${productRows(rows)}</tbody></table>
+    <div style="margin:18px 0 0 auto;width:360px">${kv('Tạm tính', total + ' đ')}${kv('Khuyến mãi', '—')}
+      <div class="kv" style="border:0;padding-top:12px"><span style="color:var(--text);font-weight:700">Tổng thanh toán</span><b style="font-size:20px">${total} đ</b></div></div>
+  </div>`;
+}
+
+function s02() {
+  return dms('order', `
+    ${head(['Đặt hàng', 'Xác nhận đơn hàng'], `Xác nhận đơn hàng PO-88412 ${tag('Nháp', 'gray')}`,
+      `Người bán: <b>${SELLER}</b> · Giao dự kiến: 24/09/2026 · Kho nhận: Kho Minh Phát, Q. Tân Phú, TP.HCM`)}
+    <div class="grid" style="grid-template-columns:1fr 456px">
+      <div class="stack">
+        ${orderLeft(PRODUCTS, '285.000.000')}
+        <div class="alert a-info"><span class="a-ico">${ic('up2')}</span><div><b>Chênh lệch dòng tiền của bạn</b>
+          <p>Bạn phải trả NPP Cấp 1 trong 3–5 ngày, trong khi điểm bán được gối đầu 7–30 ngày. PO-Express tài trợ khoảng chênh lệch này.</p></div></div>
+      </div>
+      <div class="card">
+        <h3>Phương thức thanh toán</h3>
+        <div class="popts mt16">
+          <div class="popt">${radio(false, 'dms')}<div><b>Chuyển khoản cho NPP Cấp 1</b><div class="p-sub">Trong 5 ngày sau khi nhận hàng</div></div></div>
+          <div class="popt">${radio(false, 'dms')}<div><b>Tiền mặt khi nhận hàng</b><div class="p-sub">Thanh toán cho nhân viên giao hàng</div></div></div>
+          <div class="popt msbopt on">${radio(true)}<div class="grow">
+            <div class="between"><div class="row"><span class="logo-mark sm">MSB</span><b>MSB PO-Express</b></div>${tag('Đề xuất cho bạn', 'solid')}</div>
+            <div class="p-sub">Tài trợ đơn hàng — không cần tài sản bảo đảm</div>
+            <div class="p-detail">
+              <div class="between mt16"><span class="muted small">Hạn mức khả dụng</span><b class="num" style="font-size:16px">300.000.000 đ</b></div>
+              <div class="bar lg mt8"><i style="width:95%"></i><i class="b2" style="width:0"></i></div>
+              <div class="legend"><span><i style="background:var(--primary)"></i>Đơn này 285.000.000 đ</span><span><i style="background:#EEF0F3;border:1px solid #D7DBE1"></i>Còn lại sau đơn 15.000.000 đ</span></div>
+              <div class="mt12">${kv('Kỳ hạn', '36 ngày · đến hạn 28/10/2026')}${kv('Lãi suất 10,5%/năm', '≈ 2.951.507 đ')}${kv('Phí nền tảng 0,10%', '285.000 đ')}
+                ${kv('Tổng chi phí <span class="faint">(≈ 11,5%/năm)</span>', '≈ 3.236.507 đ')}</div>
+              <div class="kv total"><span>Tổng phải trả khi đến hạn</span><b>288.236.507 đ</b></div>
+              <div class="stack mt16" style="gap:10px">
+                <div class="feature">${ic('lock')}<span><b>Tiền chuyển thẳng cho ${SELLER}</b> — không qua tài khoản của bạn</span></div>
+                <div class="feature">${ic('qr')}<span>Trả nợ tự động từ tiền bán hàng: điểm bán quét QR NAPAS 247 vào Tài khoản định danh của bạn</span></div>
+                <div class="feature">${ic('clock')}<span>Có kết quả trong vài phút · nếu cần RM xem xét: tối đa 24 giờ</span></div>
+              </div>
+            </div></div></div>
+        </div>
+        <div class="row mt16" style="padding:12px 14px;border-radius:10px;background:var(--green-50);font-size:13px">
+          <span style="color:var(--green)">${ic('shield')}</span><span class="grow"><b>Đang chia sẻ dữ liệu DMS với MSB</b><span class="xs muted" style="display:block">Hiệu lực đến 18/09/2027</span></span><a class="link">Quản lý ${ic('right')}</a></div>
+        <button class="btn btn-primary btn-lg btn-block mt16" data-go="03" data-wait="Đang chuyển sang MSB Business…|Đơn PO-88412 được gửi sang MSB qua Open API. DMS không xử lý thông tin tài khoản.">Đặt hàng &amp; thanh toán qua MSB ${ic('arrow')}</button>
+        <p class="xs faint mt8" style="text-align:center;margin-bottom:0">Bạn sẽ được chuyển sang MSB Business để xác nhận khoản vay.</p>
+      </div>
+    </div>`);
+}
+
+function s03() {
+  return msb('pox', `
+    ${head(['Tín dụng', 'Tài trợ chuỗi', 'PO-Express', 'Đề nghị tài trợ'], 'Đề nghị tài trợ PO-88412',
+      `Nhận từ SABECO DMS lúc 14:04:12 · 22/09/2026 · Người bán: ${SELLER}`, tag('Đạt ngưỡng · Phê duyệt tự động', 'green', 'checkc', 'lg'))}
+    <div class="grid" style="grid-template-columns:420px 1fr">
+      <div class="card"><div class="card-head"><h3>${ic('history')} Tiến trình xử lý</h3><span class="xs faint">Tổng: 58 giây</span></div>
+        ${tl([
+          ['done', 'Nhận đơn hàng từ DMS', 'Webhook · IBM API Connect · FAPI 2.0 + mTLS', '14:04:12'],
+          ['done', 'Kiểm tra đồng ý chia sẻ dữ liệu', 'Còn hiệu lực đến 18/09/2027', '14:04:12'],
+          ['done', 'Kiểm tra trùng đơn hàng', 'Mã băm SHA-256 · chưa từng được tài trợ', '14:04:58'],
+          ['done', 'Chấm điểm tự động', '18 ms · mô hình v1 (nhãn thay thế từ DMS)', '14:05:02'],
+          ['done', 'Phê duyệt', 'Đạt ngưỡng tự động (≥ 700)', '14:05:02'],
+          ['now', 'Chờ bạn ký nhận nợ', 'Xác nhận điều kiện khoản vay và ký số', 'Hiện tại'],
+          ['todo', 'Giải ngân cho người bán', `Chuyển thẳng ${SELLER}`, ''],
+          ['todo', 'Thu nợ tự động', 'Từ Tài khoản định danh khi đến hạn 28/10/2026', '']])}
+      </div>
+      <div class="stack">
+        <div class="card"><div class="card-head"><h3>${ic('spark')} Kết quả chấm điểm</h3>${tag('Mô hình v1 · pilot', 'gray')}</div>
+          <div class="row" style="gap:28px;align-items:center">
+            ${gauge(742)}
+            <div class="grow">
+              ${kv('Số tiền tài trợ', '<span style="font-size:17px">285.000.000 đ</span>')}${kv('Hạn mức đề xuất', '<span style="font-size:17px">300.000.000 đ</span>')}${kv('Lãi suất theo rủi ro', '<span style="font-size:17px;color:var(--primary-600)">10,5%/năm</span>')}
+              <div class="xs muted mt8">Hạn mức = min(khoảng hụt vốn ước tính theo CCC: 457 triệu; trần pilot nhánh B: 300 triệu)</div>
+            </div>
+          </div></div>
+        <div class="card"><h3>Các yếu tố chính ảnh hưởng đến kết quả</h3>
+          <div class="mt12">
+            ${[['up2', 'green', 'Thanh toán cho NPP Cấp 1 đúng hạn 97% trong 12 tháng', 90], ['up2', 'green', 'Đặt hàng đều đặn: trung bình 9,2 đơn/tháng', 62],
+              ['up2', 'green', 'Hợp tác với SABECO 4 năm 3 tháng', 46], ['down2', 'red', 'Doanh số 3 tháng gần nhất giảm 8% so với cùng kỳ', 28]].map(([i, c, t, w]) =>
+              `<div class="factor"><span class="f-i" style="background:var(--${c}-50);color:var(--${c})">${ic(i)}</span><span>${t}</span><div class="bar"><i class="${c === 'green' ? 'g' : ''}" style="width:${w}%;${c === 'red' ? 'background:var(--red)' : ''}"></i></div></div>`).join('')}
+          </div>
+          <div class="row mt12 xs muted" style="gap:6px">Dữ liệu đã dùng: ${tag('Giao dịch DMS 12 tháng', 'green', 'check')} ${tag('Dòng tiền NH khác (AIS): không chia sẻ', 'gray')}</div>
+        </div>
+        <div class="alert a-warn"><span class="a-ico">${ic('info')}</span><div><b>Chế độ pilot</b><p>Kết quả tự động chỉ để tham khảo; cán bộ RM xác nhận 100% (tối đa 24 giờ) cho tới khi hồ sơ sandbox NĐ 94/2025 được chấp thuận.</p></div></div>
+        <div class="row" style="justify-content:flex-end;gap:12px"><button class="btn btn-ghost btn-lg">Từ chối đề nghị</button>
+          <button class="btn btn-primary btn-lg" data-go="04">Tiếp tục ký nhận nợ ${ic('arrow')}</button></div>
+      </div>
+    </div>`);
+}
+
+function s04() {
+  const lockf = (l, v) => `<div><div class="label">${l}</div><div class="input locked">${v}${ic('lock')}</div></div>`;
+  return msb('pox', `
+    ${head(['Tín dụng', 'Tài trợ chuỗi', 'PO-Express', 'Xác nhận khoản vay'], 'Xác nhận khoản vay PO-88412', 'Kiểm tra điều kiện, đọc Giấy nhận nợ và ký số để giải ngân.')}
+    <div class="card" style="padding:18px 28px">${steps(['Thông tin đơn hàng', 'Người nhận tiền', 'Điều kiện khoản vay', 'Xác nhận & Ký số'], 3)}</div>
+    <div class="grid mt16" style="grid-template-columns:1fr 392px">
+      <div class="stack">
+        <div class="card"><div class="card-head"><h3>${ic('building')} Người nhận tiền</h3>${tag('Đã khóa theo PO trên DMS', 'orange', 'lock')}</div>
+          <div class="grid" style="grid-template-columns:1fr 1fr;gap:14px 16px">${lockf('Tên người nhận', SELLER)}${lockf('Ngân hàng', 'MSB')}${lockf('Số tài khoản', '•••• •••• 4521')}${lockf('Nội dung', 'Thanh toan PO-88412')}</div>
+          <div class="xs muted mt12 row" style="gap:6px">${ic('info')} Bên thụ hưởng được khóa theo PO trên DMS — NPP Cấp 2 không cầm tiền giải ngân.</div></div>
+        <div class="card"><h3>${ic('file')} Điều kiện khoản vay</h3>
+          <div class="grid mt8" style="grid-template-columns:1fr 1fr;gap:0 32px">
+            <div>${kv('Số tiền giải ngân', '285.000.000 đ')}${kv('Kỳ hạn', '36 ngày')}${kv('Ngày giải ngân', '22/09/2026')}${kv('Ngày đến hạn', '28/10/2026')}</div>
+            <div>${kv('Lãi suất', '10,5%/năm')}${kv('Lãi dự kiến', '2.951.507 đ')}${kv('Phí nền tảng (0,10%)', '285.000 đ')}${kv('Chi phí quy đổi', '≈ 11,5%/năm')}</div>
+          </div>
+          <div class="kv total"><span>Tổng phải trả khi đến hạn</span><b>288.236.507 đ</b></div></div>
+        <div class="card"><h3>${ic('refresh')} Nguồn trả nợ</h3>
+          <div class="ilist">
+            <div><span class="num-dot">1</span><span><b>Tài khoản định danh 968 868 00147</b> — tiền bán hàng từ điểm bán qua QR NAPAS 247</span></div>
+            <div><span class="num-dot">2</span><span>Nếu thiếu khi đến hạn: Tài khoản thanh toán MSB •••• 8899</span></div>
+            <div><span class="num-dot">3</span><span>Nếu vẫn thiếu: chuyển quá hạn, cán bộ RM liên hệ</span></div>
+          </div></div>
+      </div>
+      <div class="stack">
+        <div class="card"><div class="card-head"><h3>Giấy nhận nợ</h3>${tag('Tạo tự động', 'gray')}</div>
+          <div class="doc"><div class="d-title">GIẤY NHẬN NỢ</div><div class="d-no">Số GNN-PX-000001 · kèm PO-88412</div>
+            <div class="d-l" style="width:92%"></div><div class="d-l" style="width:78%"></div><div class="d-l" style="width:86%"></div><div class="d-l" style="width:60%"></div><div class="d-l" style="width:82%"></div>
+            <div class="d-sign"><span>Bên vay</span><span>MSB</span></div><div class="stamp">CHỜ KÝ</div></div>
+          <div class="row mt12" style="gap:10px"><button class="btn btn-ghost btn-sm grow">${ic('eye')} Xem toàn văn</button><button class="btn btn-ghost btn-sm grow">${ic('download')} Tải PDF</button></div></div>
+        <div class="card"><div class="check-line">${cb(true)}<span>Tôi xác nhận đã đọc, hiểu rõ và đồng ý với Giấy nhận nợ và các điều khoản <a class="link" style="font-size:13.5px">dịch vụ giải ngân trực tuyến</a>.</span></div></div>
+        <div class="card"><h3>${ic('pen')} Ký số &amp; xác thực</h3>
+          <div class="label mt16">Phương thức ký</div><div class="input">Chữ ký số VNPT SmartCA ${ic('down')}</div>
+          <div class="label mt16">Mã OTP · hiệu lực 60 giây</div>${otp(3, 3)}</div>
+      </div>
+    </div>
+    <div class="row mt20" style="justify-content:flex-end;gap:12px"><button class="btn btn-ghost btn-lg" data-go="03">Quay lại</button>
+      <button class="btn btn-primary btn-lg" style="min-width:220px" data-go="05" data-wait="Đang ký số và giải ngân…|MSB chuyển 285.000.000 đ thẳng cho ${SELLER} và báo lại SABECO DMS.">${ic('pen')} Ký &amp; giải ngân</button></div>`);
+}
+
+function s05() {
+  return dms('orders', `
+    <div class="toast"><span class="t-ok">${ic('check')}</span><div><b>MSB: Đã thanh toán PO-88412 cho ${SELLER}</b><p>285.000.000 đ · 14:09:31 · Mã giải ngân GN-20260922-0412</p></div></div>
+    ${head(['Đơn hàng', 'PO-88412'], `Đơn hàng PO-88412 ${tag('Đã thanh toán', 'green', 'check')}`, `Người bán: <b>${SELLER}</b> · Giao dự kiến: 24/09/2026`)}
+    <div class="card" style="padding:18px 28px">${steps([['Tạo đơn', '14:04'], ['Đã thanh toán', '14:09 · qua MSB'], ['Chờ xuất kho', 'Dự kiến 23/09'], 'Đang giao', 'Đã giao'], 2, 'dms')}</div>
+    <div class="grid mt16" style="grid-template-columns:1fr 420px">
+      <div class="stack">
+        <div class="card"><h3>${ic('banknote')} Thông tin thanh toán</h3><div class="mt8">
+          ${kv('Phương thức', '<span class="row" style="justify-content:flex-end"><span class="logo-mark sm">MSB</span> PO-Express</span>')}
+          ${kv('Số tiền người bán đã nhận', '<span style="font-size:17px">285.000.000 đ</span>')}
+          ${kv('Thời điểm', '22/09/2026 14:09:31')}${kv('Mã giải ngân MSB', 'GN-20260922-0412')}
+          ${kv('Khoản vay', 'LN-PX-0001 · đến hạn 28/10/2026 · thu từ Tài khoản định danh')}</div></div>
+        <div class="card"><h3>${ic('package')} Sản phẩm (4)</h3>
+          <table class="tbl tbl-flush mt12"><thead><tr><th>Sản phẩm</th><th>Quy cách</th><th class="r">SL (thùng)</th><th class="r">Thành tiền</th></tr></thead>
+          <tbody>${PRODUCTS.map(([n, sku, spec, q, p, t]) => `<tr><td><b style="font-weight:600">${n}</b><small>${sku}</small></td><td class="muted">${spec}</td><td class="r num">${q}</td><td class="r num"><b>${t}</b></td></tr>`).join('')}</tbody></table></div>
+      </div>
+      <div class="stack">
+        <div class="card soft"><div class="between"><div class="row"><span class="logo-mark sm">MSB</span><b>PO-Express</b></div>${tag('Đang dùng 95%', 'orange')}</div>
+          <div class="between mt16"><span class="muted small">Hạn mức còn lại</span><b class="num">15.000.000 / 300.000.000 đ</b></div>
+          <div class="bar lg mt8"><i style="width:95%"></i></div>
+          <a class="link mt16" data-go="06">Xem khoản vay trên MSB Business ${ic('ext')}</a></div>
+        <div class="card"><h3>${ic('truck')} Nếu giao hàng lệch đơn</h3>
+          <p class="small mt8" style="margin-bottom:0">Thiếu hàng hoặc trả hàng → DMS gửi điều chỉnh kèm mã PO gốc; người bán hoàn phần chênh lệch về khoản vay và dư nợ được điều chỉnh ngay.</p></div>
+        <div class="card"><h3>${ic('printer')} Phiếu giao hàng</h3>
+          <div class="row mt12" style="gap:16px;align-items:flex-start"><div class="qr">${qr(92, 3)}</div>
+            <div class="grow"><div class="check-line">${cb(true)}<span>In mã QR Tài khoản định danh lên phiếu giao hàng để điểm bán quét trả tiền</span></div>
+              <button class="btn btn-dms btn-sm mt12">${ic('printer')} In phiếu giao hàng</button></div></div></div>
+      </div>
+    </div>`);
+}
+
+function s06() {
+  return msb('home', `
+    <div class="between" style="margin-bottom:18px"><div><h1 style="margin-top:0">Xin chào, ${NPP}</h1><p class="sub">Thứ Ba, 22/09/2026</p></div>
+      <span class="pill">${ic('calendar')} Cập nhật lúc 14:15</span></div>
+    <div class="grid" style="grid-template-columns:330px 1fr 300px">
+      <div class="card"><div class="card-head"><h3>Tổng quan tài sản</h3>${ic('right')}</div>
+        <div class="row" style="gap:18px">
+          <svg width="112" height="112" viewBox="0 0 112 112"><circle cx="56" cy="56" r="42" fill="none" stroke="#2E90FB" stroke-width="16"/><text x="56" y="61" text-anchor="middle" font-size="15" font-weight="800" fill="#1D2129" font-family="Be Vietnam Pro">100%</text></svg>
+          <div class="grow"><div class="xs muted">Tổng số dư VND</div><div style="font-size:19px;font-weight:800" class="num">124.560.000</div>
+            <div class="xs mt8 row" style="gap:6px"><i class="sdot" style="background:#2E90FB"></i>TK thanh toán ••8899</div>
+            <div class="xs mt8 row" style="gap:6px"><i class="sdot" style="background:#FABB6B"></i>Tài khoản định danh · 0 đ</div></div></div></div>
+      <div class="card hl"><div class="card-head"><h3>${ic('gauge')} Tổng quan tín dụng · PO-Express</h3>${tag('Đang hoạt động', 'green')}</div>
+        <div class="between" style="align-items:flex-end"><div><div class="xs muted">Hạn mức quay vòng</div><div style="font-size:28px;font-weight:800;letter-spacing:-.5px" class="num">300.000.000 đ</div></div>
+          <div style="text-align:right"><div class="xs muted">Còn lại</div><div style="font-size:18px;font-weight:800;color:var(--primary-600)" class="num">15.000.000 đ</div></div></div>
+        <div class="bar lg mt12"><i style="width:95%"></i></div>
+        <div class="between mt8 xs"><span><b>Đã sử dụng 285.000.000 đ</b></span><span class="muted">Hạn mức mở lại khi khoản vay được thu</span></div></div>
+      <div class="card"><div class="card-head"><h3>Lịch sử tín dụng</h3>${ic('up2')}</div>
+        <div class="row" style="gap:12px"><div style="font-size:40px;font-weight:800;color:var(--primary);line-height:1">1</div><div class="small"><b>khoản vay chính thức đầu tiên</b><div class="xs muted">0/1 khoản đã hoàn tất</div></div></div>
+        <div class="xs muted mt12">Trả đúng hạn giúp hạn mức tăng dần theo thời gian.</div></div>
+    </div>
+    <div class="alert a-orange mt16" style="align-items:center"><span class="a-ico">${ic('calendar')}</span><div><b>Quý khách có khoản sắp đến hạn</b>
+      <p>PO-88412 · <b>288.236.507 đ</b> · đến hạn 28/10/2026 · thu tự động từ Tài khoản định danh 968 868 00147</p></div>
+      <button class="btn btn-outline btn-sm" data-go="09">Xem khoản đến hạn</button></div>
+    <div class="card mt16" style="padding:16px 12px"><div class="qa">
+      <div data-go="09"><span class="q-ic">${ic('qr')}</span>Tài khoản định danh &amp; QR</div>
+      <div><span class="q-ic">${ic('zap')}</span>Trả nợ trước hạn</div>
+      <div><span class="q-ic">${ic('calendar')}</span>Lịch trả nợ</div>
+      <div data-go="07"><span class="q-ic">${ic('shield')}</span>Quản lý chia sẻ dữ liệu</div></div></div>
+    <div class="grid mt16" style="grid-template-columns:1fr 320px">
+      <div class="card"><div class="card-head"><h3>Khoản vay PO-Express</h3><div class="row"><span class="fchip on">Đang hoạt động (1)</span><span class="fchip">Đã tất toán (0)</span></div></div>
+        <table class="tbl tbl-flush nowrap"><thead><tr><th>Mã khoản</th><th>Đơn hàng</th><th>Người nhận tiền</th><th class="r">Số tiền</th><th>Đến hạn</th><th>Trạng thái</th></tr></thead>
+        <tbody><tr><td><b>LN-PX-0001</b><small>Giải ngân 22/09/2026</small></td><td>PO-88412</td><td>${SELLER}</td><td class="r num"><b>285.000.000</b></td><td>28/10/2026</td><td>${tag('Đang thu nợ', 'orange')}</td></tr></tbody></table>
+        <div class="row" style="gap:20px;padding-top:14px;border-top:1px solid var(--line2);margin:14px -20px -4px;padding-left:20px"><a class="link">Lịch trả nợ ${ic('right')}</a><a class="link">Sổ phụ khoản vay ${ic('right')}</a></div></div>
+      <div class="stack">
+        <div class="card"><div class="card-head" style="margin-bottom:10px"><h3>Lịch đến hạn</h3><a class="link">Xem tất cả</a></div>
+          <div class="row" style="gap:14px"><div style="width:56px;height:60px;border-radius:10px;background:var(--primary-50);display:grid;place-items:center;text-align:center;line-height:1.1"><div><div style="font-size:20px;font-weight:800;color:var(--primary-600)">28</div><div class="xs muted" style="font-weight:700">TH10</div></div></div>
+            <div><b>PO-88412</b><div class="small num">288.236.507 đ</div><div class="xs faint">Thu tự động · Tài khoản định danh</div></div></div></div>
+        <div class="card"><h3>${ic('bell')} Thông báo</h3>
+          <div class="mt12" style="display:grid;gap:12px">
+            ${[['14:09', 'Giải ngân thành công PO-88412', 'green'], ['14:07', 'Đã ký Giấy nhận nợ GNN-PX-000001', 'orange'], ['20/09', 'Hạn mức PO-Express 300.000.000 đ được phê duyệt', 'orange'], ['18/09', 'Đã đồng ý chia sẻ dữ liệu DMS', 'gray']]
+              .map(([t, m, c]) => `<div class="row small" style="gap:10px;align-items:flex-start"><i class="sdot" style="margin-top:6px;background:var(--${c === 'gray' ? 'text3' : c === 'orange' ? 'primary' : c})"></i><span class="grow">${m}</span><span class="xs faint num">${t}</span></div>`).join('')}
+          </div></div>
+      </div>
+    </div>`, 3);
+}
+
+function consentDashboard() {
+  const row = (sel, title, tags, from, purpose, exp, status) => `<tr class="${sel ? 'sel' : ''}">
+    <td style="padding-left:20px"><b>${title}</b><span class="sub2">${from}</span><div class="row mt8" style="gap:6px">${tags}</div></td><td class="small">${purpose}</td><td class="small" style="white-space:nowrap">${exp}</td><td style="white-space:nowrap">${status}</td></tr>`;
+  const log = [['22/09 14:05:02', 'AI Scoring', 'cpu', 'Chấm điểm PO-88412', 'Lịch sử PO 12 tháng'], ['22/09 14:04:58', 'Registry chống trùng', 'db', 'Kiểm tra trùng PO-88412', 'Mã băm PO'],
+    ['22/09 14:04:12', 'IBM API Connect', 'link', 'Nhận PO từ DMS', 'PO-88412'], ['20/09 09:12', 'Cán bộ RM · N.T. Hạnh', 'user', 'Xét duyệt hạn mức ban đầu', 'Hồ sơ NPP, công nợ'],
+    ['18/09 09:31', 'IBM API Connect', 'link', 'Đồng bộ dữ liệu ban đầu', 'Giao dịch DMS 12 tháng']];
+  return msb('consent', `
+    ${head(['Dữ liệu & quyền riêng tư', 'Quản lý chia sẻ dữ liệu'], 'Quản lý chia sẻ dữ liệu', 'Xem dữ liệu bạn đang chia sẻ, ai đã truy cập và rút đồng ý bất cứ lúc nào.')}
+    <div class="grid" style="grid-template-columns:1fr 372px">
+      <div class="stack">
+        <div class="grid" style="grid-template-columns:repeat(4,1fr);gap:12px">
+          <div class="stat"><div class="s-l">${ic('shield')}Đang hiệu lực</div><div class="s-v">1</div></div>
+          <div class="stat"><div class="s-l">${ic('sliders')}Chưa bật</div><div class="s-v">2</div></div>
+          <div class="stat"><div class="s-l">${ic('calendar')}Hết hạn gần nhất</div><div class="s-v" style="font-size:19px">18/09/2027</div></div>
+          <div class="stat"><div class="s-l">${ic('banknote')}Khoản vay</div><div class="s-v" style="font-size:19px">1 · 285 tr</div></div>
+        </div>
+        <div class="card" style="padding-top:12px">
+          <div class="row" style="gap:6px;margin:0 -8px 14px;border-bottom:1px solid var(--line2)">
+            <span style="padding:10px 12px;font-weight:700;box-shadow:inset 0 -2px 0 var(--primary);color:var(--primary-600)">Đang chia sẻ (1)</span>
+            <span style="padding:10px 12px" class="muted">Nhật ký truy cập</span><span style="padding:10px 12px" class="muted">Lịch sử (0)</span></div>
+          <table class="tbl" style="margin:0 -20px;width:calc(100% + 40px)"><thead><tr><th style="padding-left:20px">Dữ liệu · nguồn → bên nhận</th><th>Mục đích</th><th>Hết hạn</th><th>Trạng thái</th></tr></thead><tbody>
+            ${row(true, 'Giao dịch DMS 12 tháng', tag('Bắt buộc cho PO-Express', 'orange'), 'SABECO DMS → MSB', 'Chấm điểm, cấp hạn mức, đối soát', '18/09/2027<br><span class="faint">còn 360 ngày</span>', tag('Đang hiệu lực', 'green', 'check'))}
+            ${row(false, 'Dòng tiền NH khác (AIS)', tag('Tùy chọn', 'gray') + tag('Nhạy cảm', 'dash'), 'Ngân hàng khác → MSB', 'Tín hiệu bổ sung, có thể nâng hạn mức', 'Tối đa 180 ngày', `<div class="row" style="gap:8px">${sw(false)}<span class="xs muted">Chưa bật</span></div>`)}
+            ${row(false, 'Chỉ số tổng hợp cho SABECO', tag('Tùy chọn', 'gray'), 'MSB → SABECO', 'Báo cáo mạng lưới (giai đoạn 3)', '—', `<div class="row" style="gap:8px">${sw(false)}<span class="xs muted">Chưa bật</span></div>`)}
+          </tbody></table></div>
+        <div class="card"><div class="card-head"><h3>${ic('history')} Nhật ký truy cập · 7 ngày gần nhất</h3><a class="link">Xem tất cả ${ic('right')}</a></div>
+          <div class="between" style="margin-bottom:12px"><div class="row"><span class="fchip">${ic('calendar')}7 ngày ${ic('down')}</span><span class="fchip">${ic('user')}Bên truy cập ${ic('down')}</span><span class="fchip">${ic('filter')}Mục đích ${ic('down')}</span></div>
+            <button class="btn btn-ghost btn-sm">${ic('download')} Xuất CSV</button></div>
+          <table class="tbl tbl-flush"><thead><tr><th>Thời gian</th><th>Bên truy cập</th><th>Mục đích · dữ liệu</th><th>Kết quả</th></tr></thead><tbody>
+            ${log.map(([t, w, i, p, d]) => `<tr><td class="num small nowrap">${t}</td><td><span class="row small" style="gap:8px;white-space:nowrap"><span style="color:var(--text3)">${ic(i)}</span>${w}</span></td><td class="small">${p}<span class="sub2">${d}</span></td><td>${tag('Thành công', 'green')}</td></tr>`).join('')}
+          </tbody></table>
+          <div class="xs muted row" style="gap:6px;margin-top:14px">${ic('lock')} Mọi lần truy cập được ghi nhật ký không sửa xóa.</div></div>
+      </div>
+      <div class="drawer">
+        <div class="between"><h3 style="margin:0;font-size:17px;font-weight:800">Giao dịch DMS 12 tháng</h3><span class="icon-btn">${ic('x')}</span></div>
+        <div class="row mt8" style="gap:6px">${tag('Đang hiệu lực', 'green', 'check')}${tag('Bắt buộc cho PO-Express', 'orange')}</div>
+        <div class="sec-h">PHẠM VI &amp; THỜI HẠN</div>
+        ${kv('Ngày cấp', '18/09/2026 09:30 · OTP')}${kv('Hết hạn', '18/09/2027')}${kv('Phạm vi dữ liệu', '12 tháng gần nhất')}${kv('Truy cập gần nhất', '22/09/2026 14:05')}
+        <div class="sec-h">DỮ LIỆU CHIA SẺ</div>
+        <div class="acc">
+          <div>${ic('down')}<div><b style="font-weight:600">Hồ sơ NPP</b><div class="xs muted">Mã NPP, tên, MST/ĐKKD, địa bàn, NPP Cấp 1 quản lý, ngày bắt đầu hợp tác</div></div></div>
+          <div>${ic('right')}<b style="font-weight:600">Đơn hàng (PO)</b></div><div>${ic('right')}<b style="font-weight:600">Công nợ với NPP Cấp 1</b></div><div>${ic('right')}<b style="font-weight:600">Giao hàng</b></div></div>
+        <div class="sec-h">CÁC BÊN</div>
+        <div class="small" style="display:grid;gap:6px"><div><span class="muted">Bên kiểm soát:</span> SABECO (dữ liệu DMS), MSB</div><div><span class="muted">Bên xử lý:</span> IBM, Mambu, FPT Software</div><div><span class="muted">Lưu trữ:</span> tại Việt Nam</div></div>
+        <div class="card soft mt16" style="padding:14px 16px"><div class="xs muted" style="font-weight:700">KHOẢN VAY DỰA TRÊN DỮ LIỆU NÀY</div>
+          <div class="mt8"><b>LN-PX-0001 · PO-88412</b></div><div class="small">Dư nợ <b>285.000.000 đ</b> · còn hạn mức 15.000.000 đ</div><div class="xs muted">Đến hạn 28/10/2026 · thu từ Tài khoản định danh</div></div>
+        <div class="row mt16" style="gap:18px"><a class="link">${ic('download')} Biên bản đồng ý (PDF)</a><a class="link">${ic('history')} Lịch sử thay đổi (1)</a></div>
+        <button class="btn btn-danger-o btn-lg btn-block mt20" data-go="08">${ic('undo')} Rút đồng ý chia sẻ dữ liệu</button>
+      </div>
+    </div>`, 0);
+}
+
+function s07() { return consentDashboard(); }
+
+function s08() {
+  const c = (i, col, t, d) => `<div class="cons"><span class="c-i" style="background:var(--${col}-50);color:var(--${col})">${ic(i)}</span><div><b>${t}</b><p>${d}</p></div></div>`;
+  return consentDashboard() + `<div class="overlay" data-go="07"></div>
+    <div class="modal">
+      <div class="modal-h"><span class="m-ico">${ic('undo')}</span><div class="grow"><div style="font-size:20px;font-weight:800">Rút đồng ý chia sẻ dữ liệu DMS?</div>
+        <div class="small muted mt8" style="margin-top:2px">Giao dịch DMS 12 tháng · SABECO DMS → MSB</div></div><span class="icon-btn" data-go="07">${ic('x')}</span></div>
+      <div class="modal-b"><div class="grid" style="grid-template-columns:1fr 300px;gap:24px">
+        <div><div class="small" style="font-weight:700;margin-bottom:12px">Điều gì sẽ xảy ra khi bạn rút đồng ý</div>
+          ${c('alert', 'red', 'Dừng giải ngân mới ngay', 'PO-Express không dùng được cho đơn hàng mới kể từ khi bạn xác nhận.')}
+          ${c('refresh', 'blue', 'Khoản vay hiện có vẫn tiếp tục', 'Thu theo hợp đồng qua Tài khoản định danh.')}
+          ${c('trash', 'amber', 'Dữ liệu được xóa trong 72 giờ', 'Cam kết của MSB; trừ hồ sơ tín dụng pháp luật bắt buộc lưu.')}
+          ${c('check', 'green', 'Có thể cấp lại bất cứ lúc nào', 'Hồ sơ sẽ được chấm điểm lại từ đầu.')}</div>
+        <div class="stack" style="gap:12px">
+          <div class="card" style="background:#FAFBFC;padding:16px"><div class="xs muted" style="font-weight:700">KHOẢN VAY BỊ ẢNH HƯỞNG</div>
+            <div class="mt8" style="font-size:16px;font-weight:800">LN-PX-0001</div><div class="xs muted">PO-88412</div>
+            <div class="mt12">${kv('Dư nợ', '285.000.000 đ')}${kv('Đến hạn', '28/10/2026')}</div>${tag('Vẫn thu theo hợp đồng', 'blue', 'check')}</div>
+          <div class="xs muted row" style="gap:6px;align-items:flex-start">${ic('info')}<span>Dòng tiền ngân hàng khác (AIS): chưa bật — không bị ảnh hưởng.</span></div></div>
+      </div>
+      <div class="grid mt16" style="grid-template-columns:1fr auto;gap:24px;align-items:end;padding-top:18px;border-top:1px solid var(--line2)">
+        <div><div class="label">Lý do (không bắt buộc)</div><div class="input"><span class="ph">Chọn lý do</span>${ic('down')}</div></div>
+        <div><div class="label">Nhập mã OTP gửi tới 09•• ••• 147</div>${otp(0, 0)}</div></div></div>
+      <div class="modal-f"><div class="grid" style="grid-template-columns:1fr 1fr;gap:16px">
+        <button class="btn btn-ghost btn-lg" data-go="07">Giữ chia sẻ dữ liệu</button>
+        <button class="btn btn-danger btn-lg" data-go="12" data-wait="Đã rút đồng ý chia sẻ dữ liệu|Biên nhận đã gửi qua email. PO-Express tạm khóa cho đơn mới · khoản LN-PX-0001 vẫn thu theo hợp đồng.">Xác nhận rút đồng ý</button></div>
+        <p class="xs muted" style="margin:12px 0 0;text-align:center">Sau khi xác nhận, MSB gửi biên nhận qua email và thông báo trong ứng dụng, kèm thời điểm dữ liệu được xóa.</p></div>
+    </div>`;
+}
+
+function s09() {
+  const tx = [['28/10 17:00', 'Trích nợ tự động PO-88412', 'Gốc + lãi + phí', '—', 'Auto-sweep', '−288.236.507', '8.213.493', 1],
+    ['28/10 11:42', 'Tiền hàng HĐ 0931', '', 'Tạp hóa Cô Ba · Q. Tân Phú', 'QR NAPAS 247', '+6.480.000', '296.450.000'],
+    ['27/10 16:15', 'Tiền hàng HĐ 0925', '', 'Tạp hóa Minh Châu · Q. Bình Tân', 'QR NAPAS 247', '+12.240.000', '289.970.000'],
+    ['27/10 09:03', 'NPP nộp tiền mặt thu từ điểm bán', '', 'Quầy MSB Tân Phú', 'Tiền mặt', '+20.000.000', '277.730.000'],
+    ['26/10 18:20', 'Tiền hàng HĐ 0917', '', 'Tạp hóa Hải Yến · Q. Tân Phú', 'QR NAPAS 247', '+4.320.000', '257.730.000']];
+  return msb('va', `
+    <div class="alert a-success" style="align-items:center;margin-bottom:18px"><span class="a-ico">${ic('checkc')}</span><div><b>Đã thu nợ PO-88412 lúc 17:00 · 288.236.507 đ</b>
+      <p>Hạn mức PO-Express 300.000.000 đ đã được mở lại cho chu kỳ đặt hàng tiếp theo.</p></div><button class="btn btn-primary btn-sm" data-go="02">Tạo đơn mới trên DMS ${ic('arrow')}</button></div>
+    ${head(['Tài khoản', 'Tài khoản định danh'], 'Tài khoản định danh 968 868 00147', 'Chỉ nhận tiền bán hàng từ điểm bán · tự động trích nợ PO-Express khi đến hạn')}
+    <div class="grid" style="grid-template-columns:300px 1fr">
+      <div class="card" style="text-align:center"><h3 style="justify-content:center">${ic('qr')} Mã QR NAPAS 247</h3>
+        <div class="qr mt12">${qr(176, 11)}</div>
+        <div class="small mt12"><b>CT TNHH TM MINH PHAT</b></div><div class="xs muted num">MSB · 968 868 00147</div>
+        <div class="row mt16" style="gap:8px"><button class="btn btn-ghost btn-sm grow">${ic('download')} Tải QR</button><button class="btn btn-ghost btn-sm grow">${ic('printer')} In lên phiếu</button></div></div>
+      <div class="stack">
+        <div class="grid" style="grid-template-columns:repeat(4,1fr);gap:12px">
+          <div class="stat"><div class="s-l">${ic('store')}Tiền về 22/09–28/10</div><div class="s-v" style="font-size:19px">296.450.000 đ</div></div>
+          <div class="stat"><div class="s-l">${ic('qr')}Giao dịch QR</div><div class="s-v">184</div><div class="s-n">từ 46 điểm bán</div></div>
+          <div class="stat"><div class="s-l">${ic('chart')}Tỷ lệ qua QR</div><div class="s-v">78%</div><div class="s-n">Chỉ số theo dõi của pilot</div></div>
+          <div class="stat"><div class="s-l">${ic('wallet')}Số dư sau trích nợ</div><div class="s-v" style="font-size:19px">8.213.493 đ</div></div>
+        </div>
+        <div class="card"><div class="card-head"><h3>Khoản đang thu · PO-88412 · LN-PX-0001</h3>${tag('Đã tất toán 28/10 17:00', 'green', 'check')}</div>
+          <div class="bar lg"><i class="g" style="width:100%"></i></div>
+          <div class="between mt8 small"><span>Tích lũy trong Tài khoản định danh trước hạn: <b>100%</b></span><span class="muted">Gốc 285.000.000 + lãi 2.951.507 + phí 285.000 = <b style="color:var(--text)">288.236.507 đ</b></span></div>
+          <div class="mt16" style="padding-top:14px;border-top:1px solid var(--line2)">${steps([['Giải ngân', '22/09'], ['Tiền bán hàng về VA', '23/09 – 28/10'], ['Trích nợ tự động', '28/10 17:00'], ['Hạn mức mở lại', '300.000.000 đ']], 4)}</div></div>
+      </div>
+    </div>
+    <div class="grid mt16" style="grid-template-columns:1fr 340px">
+      <div class="card"><div class="card-head"><h3>${ic('history')} Giao dịch Tài khoản định danh</h3><div class="row"><span class="fchip on">Tất cả</span><span class="fchip">Tiền vào</span><span class="fchip">Trích nợ</span></div></div>
+        <table class="tbl tbl-flush"><thead><tr><th>Thời gian</th><th>Nội dung</th><th>Nguồn</th><th>Kênh</th><th class="r">Số tiền</th><th class="r">Số dư</th></tr></thead><tbody>
+          ${tx.map(([t, c, c2, s, k, a, b, sel]) => `<tr class="${sel ? 'sel' : ''}"><td class="num small nowrap">${t}</td><td class="small"><b style="font-weight:600">${c}</b>${c2 ? `<small>${c2}</small>` : ''}</td><td class="small">${s}</td>
+            <td>${k === 'Auto-sweep' ? tag('Auto-sweep', 'orange', 'refresh') : k === 'Tiền mặt' ? tag('Tiền mặt', 'gray') : tag('QR NAPAS 247', 'blue', 'qr')}</td>
+            <td class="r num nowrap ${a.startsWith('+') ? 'pos' : 'neg'}">${a}</td><td class="r num small nowrap">${b}</td></tr>`).join('')}
+        </tbody></table>
+        <div style="padding-top:14px;margin:14px -20px -4px;padding-left:20px;border-top:1px solid var(--line2)"><a class="link">Xem tất cả 196 giao dịch ${ic('right')}</a></div></div>
+      <div class="card"><h3>${ic('sliders')} Quy tắc trích nợ</h3>
+        <div class="ilist" style="gap:12px">
+          <div><span class="num-dot">1</span><span>Ưu tiên khoản đến hạn gần nhất</span></div>
+          <div><span class="num-dot">2</span><span>Trích lúc 17:00 ngày đến hạn</span></div>
+          <div><span class="num-dot">3</span><span>Số dư không đủ → trích Tài khoản thanh toán •••• 8899</span></div>
+          <div><span class="num-dot">4</span><span>Vẫn thiếu → chuyển quá hạn, RM liên hệ</span></div></div>
+        <div class="divider"></div>
+        <b>Trả nợ trước hạn</b><div class="xs muted">Trả trước → hạn mức mở lại ngay.</div>
+        <button class="btn btn-outline btn-block mt12">${ic('zap')} Trả nợ trước hạn</button>
+        <div class="divider"></div>
+        <div class="between"><div><div class="xs muted">Số dư còn lại</div><b class="num">8.213.493 đ</b></div><a class="link">Chuyển về TK thanh toán ${ic('right')}</a></div></div>
+    </div>`, 1);
+}
+
+function s10() {
+  return msb('pox', `
+    ${head(['Tín dụng', 'Tài trợ chuỗi', 'PO-Express', 'Đề nghị tài trợ'], 'Đề nghị tài trợ PO-88412 (gửi lại)', 'Nhận từ SABECO DMS lúc 16:20:07 · 22/09/2026',
+      tag('Từ chối tự động · Trùng đơn hàng', 'red', 'xc', 'lg'))}
+    <div class="alert a-error"><span class="a-ico">${ic('xc')}</span><div><b>Đơn hàng này đã được tài trợ</b>
+      <p>PO-88412 đã được giải ngân lúc 14:09 ngày 22/09/2026 (khoản LN-PX-0001). Đề nghị gửi lại lúc 16:20 bị từ chối tự động — <b>không phát sinh khoản vay mới</b>.</p></div></div>
+    <div class="grid mt16" style="grid-template-columns:420px 1fr">
+      <div class="card"><h3>${ic('history')} Tiến trình xử lý</h3><div class="mt16">
+        ${tl([['done', 'Nhận đơn hàng từ DMS', 'Webhook · IBM API Connect', '16:20:07'], ['done', 'Kiểm tra đồng ý chia sẻ dữ liệu', 'Còn hiệu lực', '16:20:07'],
+          ['fail', 'Kiểm tra trùng đơn hàng', 'Mã băm trùng với PO đã tài trợ lúc 14:04:58', '16:20:08'], ['todo', 'Chấm điểm tự động', 'Không thực hiện', ''], ['todo', 'Phê duyệt & giải ngân', 'Không thực hiện', '']])}</div></div>
+      <div class="stack">
+        <div class="card"><h3>${ic('fingerprint')} So khớp mã băm</h3><div class="mt8">
+          ${kv('Mã băm đề nghị mới', '<span class="hash">7f3a 9c2e … b41d c91e</span>')}
+          ${kv('Mã băm đã đăng ký', '<span class="hash">7f3a 9c2e … b41d c91e</span> <span class="xs muted">22/09 14:04:58</span>')}
+          ${kv('Kết quả', tag('Trùng khớp → từ chối', 'red', 'x'))}</div>
+          <div class="xs muted mt12">Đối chiếu với: registry nội bộ MSB · SABECO DMS · Trade Finance Registry (VNBA) khi MSB được kết nạp.</div></div>
+        <div class="card"><h3>Bạn có thể</h3>
+          <div class="ilist" style="gap:10px"><div><span class="ii">${ic('cart')}</span><span>Nếu đây là đơn hàng mới: tạo PO mới trên SABECO DMS.</span></div>
+            <div><span class="ii">${ic('msg')}</span><span>Nếu cho rằng có sai sót: gửi phản hồi cho cán bộ RM (Nguyễn Thị Hạnh).</span></div></div>
+          <div class="row mt16" style="gap:10px"><button class="btn btn-outline">${ic('send')} Gửi phản hồi cho RM</button><button class="btn btn-ghost" data-go="06">Về trang chủ</button></div></div>
+        <div class="alert a-info"><span class="a-ico">${ic('info')}</span><div><b>Gửi lại do mất kết nối không tạo khoản vay trùng</b><p>Mỗi PO có một khóa định danh duy nhất (idempotency key); lệnh gửi lại được nhận diện và bỏ qua.</p></div></div>
+      </div>
+    </div>`);
+}
+
+function s11() {
+  const sys = (n, ok, d) => `<div class="between" style="padding:12px 0;border-top:1px solid var(--line2)"><div><div class="row" style="gap:10px"><i class="sdot ${ok ? 'g' : 'r'}"></i><b>${n}</b></div>${d ? `<div class="xs muted" style="margin:4px 0 0 18px">${d}</div>` : ''}</div>${ok ? tag('Hoạt động', 'green') : tag('Gián đoạn', 'red')}</div>`;
+  return msb('pox', `
+    <div class="alert a-warn" style="align-items:center;margin-bottom:18px"><span class="a-ico">${ic('wifioff')}</span><div><b>Kết nối với SABECO DMS đang gián đoạn từ 10:42</b>
+      <p>MSB tạm dừng phê duyệt tự động cho đơn hàng mới. Khoản vay đang có vẫn thu nợ bình thường qua Tài khoản định danh.</p></div><button class="btn btn-ghost btn-sm">Xem trạng thái hệ thống</button></div>
+    ${head(['Tín dụng', 'Tài trợ chuỗi', 'PO-Express', 'Đề nghị tài trợ'], 'Đề nghị tài trợ PO-88590',
+      `Nhận từ SABECO DMS lúc 10:41:55 · 05/11/2026 · 240.000.000 đ · Người bán: ${SELLER}`, tag('Đang chờ RM xem xét', 'amber', 'clock', 'lg'))}
+    <div class="grid" style="grid-template-columns:420px 1fr">
+      <div class="card"><h3>${ic('history')} Tiến trình xử lý</h3><div class="mt16">
+        ${tl([['done', 'Nhận đơn hàng từ DMS', 'Nhận trước khi kết nối gián đoạn', '10:41:55'], ['done', 'Kiểm tra đồng ý chia sẻ dữ liệu', 'Còn hiệu lực', '10:41:55'],
+          ['warn', 'Kiểm tra trùng đơn hàng', 'Đã đối chiếu registry nội bộ; chưa xác minh được với DMS', '10:42:30'],
+          ['warn', 'Chấm điểm tự động', 'Tạm dừng: không lấy được dữ liệu DMS mới nhất', '10:42:30'],
+          ['now', 'Chuyển cán bộ RM xem xét', 'Hạn xử lý: trước 10:45 ngày 06/11/2026 (≤ 24 giờ)', '10:42:31', 'user'],
+          ['todo', 'Giải ngân cho người bán', 'Sau khi RM phê duyệt', '']])}</div></div>
+      <div class="stack">
+        <div class="card"><div class="card-head" style="margin-bottom:4px"><h3>${ic('cpu')} Trạng thái hệ thống</h3><span class="xs faint">Cập nhật 10:45</span></div>
+          ${sys('SABECO DMS API', false, 'Ngắt mạch (circuit breaker) sau 3 lần quá thời gian 5 giây')}${sys('MSB Core (Mambu / T24)', true)}${sys('Thu nợ qua Tài khoản định danh', true)}
+          <div class="xs muted" style="padding-top:12px;border-top:1px solid var(--line2)">Cam kết: uptime API ≥ 99,5% · RTO ≤ 4 giờ · RPO ≤ 15 phút</div></div>
+        <div class="card"><h3>Cán bộ quan hệ khách hàng</h3>
+          <div class="between mt12"><div class="row" style="gap:12px"><div class="avatar" style="width:46px;height:46px;background:linear-gradient(135deg,#93C5FD,#2E7CF6)">NH</div>
+            <div><b>Nguyễn Thị Hạnh</b><div class="xs muted">MSB Chi nhánh Tân Phú · 0909 ••• 123</div></div></div>
+            <div class="row" style="gap:8px"><button class="btn btn-ghost btn-sm">${ic('msg')} Nhắn RM</button><button class="btn btn-outline btn-sm">${ic('phone')} Gọi</button></div></div></div>
+        <div class="alert a-info"><span class="a-ico">${ic('refresh')}</span><div><b>Khi DMS phục hồi</b><p>Hệ thống tự động đối soát, chấm điểm lại và thông báo kết quả. Nếu kết quả khác với đánh giá của RM, hạn mức được điều chỉnh.</p></div></div>
+      </div>
+    </div>`);
+}
+
+function s12() {
+  const rows = [['Bia Sài Gòn Lager', 'SGL-24L330', 'Thùng 24 lon 330ml', 300, '255.000', '76.500.000'], ['Bia 333', 'B333-24L330', 'Thùng 24 lon 330ml', 250, '270.000', '67.500.000'],
+    ['Bia Sài Gòn Chill', 'SGC-24L330', 'Thùng 24 lon 330ml', 100, '360.000', '36.000.000']];
+  return dms('order', `
+    ${head(['Đặt hàng', 'Xác nhận đơn hàng'], `Xác nhận đơn hàng PO-88437 ${tag('Nháp', 'gray')}`,
+      `Người bán: <b>${SELLER}</b> · Giao dự kiến: 27/09/2026 · Kho nhận: Kho Minh Phát, Q. Tân Phú, TP.HCM`)}
+    <div class="grid" style="grid-template-columns:1fr 456px">
+      <div class="stack">${orderLeft(rows, '180.000.000')}
+        <div class="card"><div class="card-head" style="margin-bottom:8px"><h3><span class="logo-mark sm">MSB</span> Thông báo từ MSB</h3><span class="xs faint">23/09/2026 10:03 · đã gửi email</span></div>
+          <b>Xác nhận rút đồng ý chia sẻ dữ liệu</b>
+          <div class="grid mt8" style="grid-template-columns:1fr 1fr;gap:0 32px">
+            <div>${kv('Dữ liệu', 'Giao dịch DMS 12 tháng')}${kv('Hiệu lực rút', '10:03 · 23/09/2026')}${kv('Giải ngân mới', 'Đã dừng')}</div>
+            <div>${kv('Xóa dữ liệu trước', '10:03 · 26/09/2026')}${kv('Giữ theo luật', 'Giấy nhận nợ, lịch sử vay')}${kv('Cấp lại', 'MSB Business')}</div></div></div>
+      </div>
+      <div class="card"><h3>Phương thức thanh toán</h3>
+        <div class="popts mt16">
+          <div class="popt on">${radio(true, 'dms')}<div><b>Chuyển khoản cho NPP Cấp 1</b><div class="p-sub">Trong 5 ngày sau khi nhận hàng</div></div></div>
+          <div class="popt">${radio(false, 'dms')}<div><b>Tiền mặt khi nhận hàng</b><div class="p-sub">Thanh toán cho nhân viên giao hàng</div></div></div>
+          <div class="popt dis"><span class="radio" style="background:#EEF0F3"></span><div class="grow">
+            <div class="between"><div class="row" style="opacity:.55"><span class="logo-mark sm">MSB</span><b>MSB PO-Express</b></div>${tag('Tạm không khả dụng', 'gray', 'lock')}</div>
+            <p class="small" style="margin:10px 0 0">Bạn đã rút đồng ý chia sẻ dữ liệu DMS với MSB lúc <b>10:03 ngày 23/09/2026</b>. PO-Express cần dữ liệu này để thẩm định đơn hàng.</p>
+            <button class="btn btn-outline btn-block mt12" data-go="01">${ic('shield')} Cấp lại đồng ý trên MSB Business</button>
+            <div class="xs muted row mt12" style="gap:6px;align-items:flex-start">${ic('info')}<span>Khoản vay hiện có LN-PX-0001 (285.000.000 đ, đến hạn 28/10/2026) vẫn thu theo hợp đồng.</span></div>
+          </div></div>
+        </div>
+        <div class="row mt16" style="padding:12px 14px;border-radius:10px;background:var(--red-50);font-size:13px">
+          <span style="color:var(--red)">${ic('xc')}</span><span class="grow"><b>Chia sẻ dữ liệu DMS với MSB: đã rút</b> · 23/09/2026 10:03</span></div>
+        <button class="btn btn-dms btn-lg btn-block mt16">Đặt hàng · thanh toán chuyển khoản ${ic('arrow')}</button>
+      </div>
+    </div>`);
+}
+
+const SCREENS = [
+  { code: '01', title: 'Đăng ký PO-Express & đồng ý chia sẻ dữ liệu', time: '18/09/2026 09:30', h: 1100, fn: s01 },
+  { code: '02', title: 'DMS · Tạo đơn hàng – chọn PO-Express', time: '22/09/2026 14:04', h: 1000, fn: s02 },
+  { code: '03', title: 'Thẩm định đơn hàng tự động', time: '22/09/2026 14:05', h: 960, fn: s03 },
+  { code: '04', title: 'Xác nhận khoản vay & ký số', time: '22/09/2026 14:07', h: 1000, fn: s04 },
+  { code: '05', title: 'DMS · Đơn hàng đã được thanh toán', time: '22/09/2026 14:09', h: 940, fn: s05 },
+  { code: '06', title: 'Trang chủ – Tổng quan tín dụng', time: '22/09/2026 14:15', h: 980, fn: s06 },
+  { code: '07', title: 'Quản lý chia sẻ dữ liệu', time: '23/09/2026 10:00', h: 1040, fn: s07 },
+  { code: '08', title: 'Rút đồng ý chia sẻ dữ liệu', time: '23/09/2026 10:02', h: 1040, fn: s08 },
+  { code: '09', title: 'Tài khoản định danh & thu nợ tự động', time: '28/10/2026 17:05', h: 1060, fn: s09 },
+  { code: '10', title: 'Ngoại lệ · PO trùng bị chặn', time: '22/09/2026 16:20', h: 900, fn: s10 },
+  { code: '11', title: 'Ngoại lệ · DMS gián đoạn → chuyển RM', time: '05/11/2026 10:45', h: 960, fn: s11 },
+  { code: '12', title: 'Ngoại lệ · Sau khi rút đồng ý', time: '25/09/2026 09:10', h: 960, fn: s12 },
+];
+
+/* ================= Router & presenter ================= */
+const Q = new URLSearchParams(location.search);
+const EXPORT = Q.has('export') || Q.has('measure');
+const stage = document.getElementById('stage');
+let cur = '01';
+
+function render() {
+  stage.innerHTML = SCREENS.map(s => `<section class="screen ${EXPORT ? 'noanim' : ''}" data-code="${s.code}" style="--h:${s.h}px">${s.fn()}</section>`).join('');
+}
+
+function show(code, push = true) {
+  const s = SCREENS.find(x => x.code === code) || SCREENS[0];
+  cur = s.code;
+  document.querySelectorAll('.screen').forEach(el => {
+    const on = el.dataset.code === cur;
+    el.classList.toggle('active', on);
+    if (on && !EXPORT) { el.classList.remove('active'); void el.offsetWidth; el.classList.add('active'); }
+  });
+  if (push) history.replaceState(null, '', `${location.pathname}${location.search}#/${cur}`);
+  document.title = `${cur} · ${s.title} — PO-Express`;
+  const sel = document.getElementById('p-sel'); if (sel) sel.value = cur;
+  const t = document.getElementById('p-time'); if (t) t.textContent = s.time;
+  window.scrollTo(0, 0);
+  fit();
+}
+
+function step(d) { const i = SCREENS.findIndex(s => s.code === cur); show(SCREENS[(i + d + SCREENS.length) % SCREENS.length].code); }
+
+function fit() {
+  if (EXPORT) { stage.style.zoom = 1; return; }
+  stage.style.zoom = Math.min(1, window.innerWidth / 1440);
+}
+
+function loader(msg, ms, then) {
+  const [t, p] = msg.split('|');
+  const el = document.getElementById('loader');
+  el.innerHTML = `<div class="l-card"><div class="spin"></div><div><b>${t}</b>${p ? `<p>${p}</p>` : ''}</div></div>`;
+  el.classList.add('on');
+  setTimeout(() => { el.classList.remove('on'); then(); }, ms);
+}
+
+function presenter() {
+  const bar = document.getElementById('presenter');
+  bar.innerHTML = `<button id="p-prev" title="Màn trước (←)">${ic('left')}</button>
+    <select id="p-sel">${SCREENS.map(s => `<option value="${s.code}">${s.code} · ${s.title}</option>`).join('')}</select>
+    <button id="p-next" title="Màn sau (→)">${ic('right')}</button><span class="sep"></span>
+    <span class="p-time">${ic('clock')} <span id="p-time"></span></span><span class="sep"></span>
+    <button id="p-hint" title="Hiện vùng bấm được">${ic('eye')} Vùng bấm</button>
+    <button id="p-full" title="Toàn màn hình (F)">${ic('ext')}</button>`;
+  document.getElementById('p-prev').onclick = () => step(-1);
+  document.getElementById('p-next').onclick = () => step(1);
+  document.getElementById('p-sel').onchange = e => show(e.target.value);
+  document.getElementById('p-hint').onclick = e => { document.body.classList.toggle('hints-on'); e.currentTarget.classList.toggle('on'); };
+  document.getElementById('p-full').onclick = () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+}
+
+document.addEventListener('click', e => {
+  const g = e.target.closest('[data-go]');
+  if (g) {
+    e.preventDefault();
+    const to = g.dataset.go;
+    if (g.dataset.wait) loader(g.dataset.wait, +(g.dataset.ms || 1500), () => show(to)); else show(to);
+    return;
+  }
+  const t = e.target.closest('.switch'); if (t) { t.classList.toggle('on'); return; }
+  const c = e.target.closest('.cb'); if (c) { c.classList.toggle('on'); return; }
+  const p = e.target.closest('.popt:not(.dis)');
+  if (p) { p.parentElement.querySelectorAll('.popt').forEach(x => { x.classList.toggle('on', x === p); const r = x.querySelector('.radio'); if (r && !x.classList.contains('dis')) r.classList.toggle('on', x === p); }); return; }
+  if (!e.target.closest('#presenter,button,a,.popt,.fchip')) {
+    document.body.classList.add('hint'); clearTimeout(window.__h); window.__h = setTimeout(() => document.body.classList.remove('hint'), 900);
+  }
+});
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'SELECT') return;
+  if (e.key === 'ArrowRight') step(1);
+  if (e.key === 'ArrowLeft') step(-1);
+  if (e.key === 'f' || e.key === 'F') document.getElementById('p-full')?.click();
+  if (e.key === 'h' || e.key === 'H') document.body.classList.toggle('bare');
+});
+window.addEventListener('resize', fit);
+window.addEventListener('hashchange', () => { const m = location.hash.match(/#\/(\d\d)/); if (m && m[1] !== cur) show(m[1], false); });
+
+render();
+if (EXPORT) document.body.classList.add('export'); else presenter();
+const start = (location.hash.match(/#\/(\d\d)/) || [])[1] || '01';
+show(start, false);
+
+if (Q.has('measure')) {
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => {
+    const out = {};
+    SCREENS.forEach(s => { show(s.code, false); out[s.code] = Math.max(s.h, Math.ceil(document.querySelector('.screen.active').scrollHeight)); });
+    const pre = document.createElement('pre'); pre.id = 'heights'; pre.textContent = JSON.stringify(out); document.body.appendChild(pre);
+  });
+}
+
+</script>
+</body>
+</html>
